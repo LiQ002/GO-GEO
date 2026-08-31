@@ -1,0 +1,34 @@
+name: geoclient-ci
+
+on:
+  push:
+    paths:
+      - 'geoclient/**'
+      - '.github/workflows/geoclient-ci.yml'
+  pull_request:
+    paths:
+      - 'geoclient/**'
+      - '.github/workflows/geoclient-ci.yml'
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      PUPPETEER_SKIP_DOWNLOAD: 'true'
+    defaults:
+      run:
+        working-directory: geoclient
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.9.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: geoclient/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run check
+      - run: pnpm run build:renderer:client
+      - run: pnpm run build:renderer:operator

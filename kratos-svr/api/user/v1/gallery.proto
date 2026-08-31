@@ -1,0 +1,145 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 企业图库服务。
+service GalleryService {
+  // 创建相册。
+  rpc CreateGalleryAlbum(CreateGalleryAlbumRequest) returns (GalleryAlbum) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建企业相册"};
+    option (google.api.http) = {
+      post: "/api/user/v1/gallery-albums"
+      body: "*"
+    };
+  }
+  // 获取相册。
+  rpc GetGalleryAlbum(GetGalleryAlbumRequest) returns (GalleryAlbum) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取企业相册"};
+    option (google.api.http) = {get: "/api/user/v1/gallery-albums/{id}"};
+  }
+  // 查询相册列表。
+  rpc ListGalleryAlbums(ListGalleryAlbumsRequest) returns (ListGalleryAlbumsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询企业相册"};
+    option (google.api.http) = {get: "/api/user/v1/gallery-albums"};
+  }
+  // 更新相册。
+  rpc UpdateGalleryAlbum(UpdateGalleryAlbumRequest) returns (GalleryAlbum) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新企业相册"};
+    option (google.api.http) = {
+      put: "/api/user/v1/gallery-albums/{album.id}"
+      body: "*"
+    };
+  }
+  // 删除空相册。
+  rpc DeleteGalleryAlbum(DeleteGalleryAlbumRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除企业相册"};
+    option (google.api.http) = {delete: "/api/user/v1/gallery-albums/{id}"};
+  }
+  // 上传图片。
+  rpc UploadGalleryImage(UploadGalleryImageRequest) returns (GalleryImage) {
+    option (gnostic.openapi.v3.operation) = {summary: "上传企业图库图片"};
+    option (google.api.http) = {
+      post: "/api/user/v1/gallery-images"
+      body: "*"
+    };
+  }
+  // 查询图片列表。
+  rpc ListGalleryImages(ListGalleryImagesRequest) returns (ListGalleryImagesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询企业图库图片"};
+    option (google.api.http) = {get: "/api/user/v1/gallery-images"};
+  }
+  // 删除图片及其存储对象。
+  rpc DeleteGalleryImage(DeleteGalleryImageRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除企业图库图片"};
+    option (google.api.http) = {delete: "/api/user/v1/gallery-images/{id}"};
+  }
+}
+
+// 企业相册。
+message GalleryAlbum {
+  uint64 id = 1;
+  string name = 2;
+  int32 category = 3;
+  string description = 4;
+  uint64 version = 5;
+  int64 image_count = 6;
+  string cover_image_url = 7;
+  google.protobuf.Timestamp created_at = 8;
+  google.protobuf.Timestamp updated_at = 9;
+}
+
+// 企业图库图片。
+message GalleryImage {
+  uint64 id = 1;
+  uint64 album_id = 2;
+  string original_name = 3;
+  string object_key = 4;
+  string url = 5;
+  string mime_type = 6;
+  int64 size_bytes = 7;
+  string content_hash = 8;
+  uint64 version = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message CreateGalleryAlbumRequest {
+  GalleryAlbum album = 1;
+}
+
+message GetGalleryAlbumRequest {
+  uint64 id = 1;
+}
+
+message ListGalleryAlbumsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  int32 category = 3;
+  string keyword = 4;
+}
+
+message ListGalleryAlbumsReply {
+  repeated GalleryAlbum items = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+message UpdateGalleryAlbumRequest {
+  GalleryAlbum album = 1;
+}
+
+message DeleteGalleryAlbumRequest {
+  uint64 id = 1;
+  uint64 version = 2;
+}
+
+message UploadGalleryImageRequest {
+  uint64 album_id = 1;
+  string original_name = 2;
+  string mime_type = 3;
+  bytes content = 4;
+}
+
+message ListGalleryImagesRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  uint64 album_id = 3;
+  string keyword = 4;
+}
+
+message ListGalleryImagesReply {
+  repeated GalleryImage items = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+message DeleteGalleryImageRequest {
+  uint64 id = 1;
+  uint64 version = 2;
+}

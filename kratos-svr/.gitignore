@@ -1,0 +1,51 @@
+# Reference https://github.com/github/gitignore/blob/master/Go.gitignore
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# OS General
+Thumbs.db
+.DS_Store
+
+# project
+*.cert
+*.key
+*.log
+bin/
+storage/
+
+# 防止误把 SQL 重定向产生的垃圾文件提交
+FROM
+ORDER
+SELECT
+USE
+WHERE
+
+# Develop tools
+.vscode/
+.idea/
+*.swp
+
+# 本地配置文件（含真实密码/密钥，不入库）
+configs/config.yaml
+app/user/configs/config.yaml
+app/admin/configs/config.yaml

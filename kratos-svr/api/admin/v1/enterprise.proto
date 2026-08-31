@@ -1,0 +1,307 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 企业服务。
+service EnterpriseService {
+  // 创建企业。
+  rpc CreateEnterprise(CreateEnterpriseRequest) returns (EnterpriseDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建企业"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/enterprises"
+      body: "*"
+    };
+  }
+  // 获取企业。
+  rpc GetEnterprise(GetEnterpriseRequest) returns (EnterpriseDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取企业"};
+    option (google.api.http) = {get: "/api/admin/v1/enterprises/{id}"};
+  }
+  // 查询企业列表。
+  rpc ListEnterprises(ListEnterprisesRequest) returns (ListEnterprisesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询企业列表"};
+    option (google.api.http) = {get: "/api/admin/v1/enterprises"};
+  }
+  // 更新企业。
+  rpc UpdateEnterprise(UpdateEnterpriseRequest) returns (EnterpriseDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新企业"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/enterprises/{enterprise.id}"
+      body: "*"
+    };
+  }
+  // 变更企业状态。
+  rpc ChangeEnterpriseStatus(ChangeEnterpriseStatusRequest) returns (EnterpriseDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更企业状态"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/enterprises/{id}/status"
+      body: "*"
+    };
+  }
+  // 重置企业密码。
+  rpc ResetEnterprisePassword(ResetEnterprisePasswordRequest) returns (EnterpriseAccount) {
+    option (gnostic.openapi.v3.operation) = {summary: "重置企业密码"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/enterprises/{id}/reset-password"
+      body: "*"
+    };
+  }
+  // 设置企业订阅。
+  rpc SetEnterpriseSubscription(SetEnterpriseSubscriptionRequest) returns (Subscription) {
+    option (gnostic.openapi.v3.operation) = {summary: "设置企业订阅"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/enterprises/{enterprise_id}/subscription"
+      body: "*"
+    };
+  }
+  // 设置企业配额。
+  rpc SetEnterpriseQuota(SetEnterpriseQuotaRequest) returns (QuotaLimit) {
+    option (gnostic.openapi.v3.operation) = {summary: "设置企业配额"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/enterprises/{enterprise_id}/quotas/{metric}"
+      body: "*"
+    };
+  }
+}
+
+// 企业数据。
+message Enterprise {
+  // 唯一编号。
+  uint64 id = 1;
+  // 代理商编号。
+  optional uint64 agent_id = 2;
+  // 业务编码。
+  string code = 3;
+  // 名称。
+  string name = 4;
+  // 状态。
+  string status = 5;
+  // 行业。
+  string industry = 6;
+  // 区域。
+  string region = 7;
+  // 时区。
+  string timezone = 8;
+  // 语言区域。
+  string locale = 9;
+  // 联系人名称。
+  string contact_name = 10;
+  // 联系人邮箱。
+  string contact_email = 11;
+  // 联系人手机号。
+  string contact_phone = 12;
+  // 通知偏好 JSON。
+  string notification_json = 13;
+  // 备注。
+  string remark = 14;
+  // 数据版本号。
+  uint64 version = 15;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 16;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 17;
+}
+
+// 企业账号数据。
+message EnterpriseAccount {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 登录用户名。
+  string username = 3;
+  // 电子邮箱。
+  string email = 4;
+  // 手机号码。
+  string phone = 5;
+  // 状态。
+  string status = 6;
+  // 必须变更密码。
+  bool must_change_password = 7;
+  // 失败登录数量。
+  uint32 failed_login_count = 8;
+  // 锁定截止时间。
+  google.protobuf.Timestamp locked_until = 9;
+  // 最近登录时间。
+  google.protobuf.Timestamp last_login_at = 10;
+}
+
+// 企业订阅数据。
+message Subscription {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 套餐编号。
+  uint64 plan_id = 3;
+  // 套餐名称。
+  string plan_name = 4;
+  // 状态。
+  string status = 5;
+  // 开始时间。
+  google.protobuf.Timestamp starts_at = 6;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 7;
+  // 是否自动续费。
+  bool auto_renew = 8;
+  // 数据版本号。
+  uint64 version = 9;
+}
+
+// 配额限制数据。
+message QuotaLimit {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 指标。
+  string metric = 3;
+  // 上限值。
+  int64 limit_value = 4;
+  // 已使用值。
+  int64 used_value = 5;
+  // 预留值。
+  int64 reserved_value = 6;
+  // 周期。
+  string period = 7;
+  // 重置时间。
+  google.protobuf.Timestamp reset_at = 8;
+}
+
+// 企业详情数据。
+message EnterpriseDetail {
+  // 企业。
+  Enterprise enterprise = 1;
+  // 账号。
+  EnterpriseAccount account = 2;
+  // 订阅。
+  Subscription subscription = 3;
+  // 配额列表。
+  repeated QuotaLimit quotas = 4;
+  // 文章总数。
+  int64 article_count = 5;
+  // 已发布文章数。
+  int64 published_count = 6;
+  // 点数余额（毫点）。
+  int64 points_balance = 7;
+  // 点数冻结（毫点）。
+  int64 points_frozen = 8;
+}
+
+// 创建企业请求参数。
+message CreateEnterpriseRequest {
+  // 企业。
+  Enterprise enterprise = 1;
+  // 登录用户名。
+  string username = 2;
+  // 初始密码。
+  string initial_password = 3;
+  // 账号邮箱。
+  string account_email = 4;
+  // 账号手机号。
+  string account_phone = 5;
+  // 套餐编号。
+  uint64 plan_id = 6;
+  // 订阅过期时间。
+  google.protobuf.Timestamp subscription_expires_at = 7;
+  // 配额列表。
+  repeated QuotaLimit quotas = 8;
+  // 额外赠送点数（毫点）；套餐自带点数会自动发放，此字段用于额外赠送。
+  int64 granted_points = 9;
+}
+// 获取企业请求参数。
+message GetEnterpriseRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询企业列表请求参数。
+message ListEnterprisesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 搜索关键词。
+  string keyword = 3;
+  // 状态。
+  string status = 4;
+  // 套餐编号。
+  uint64 plan_id = 5;
+  // 代理商编号。
+  optional uint64 agent_id = 6;
+  // 是否仅查询即将到期的企业。
+  optional bool expiring_soon = 7;
+}
+// 查询企业列表响应结果。
+message ListEnterprisesReply {
+  // 数据列表。
+  repeated EnterpriseDetail items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新企业请求参数。
+message UpdateEnterpriseRequest {
+  // 企业。
+  Enterprise enterprise = 1;
+}
+// 变更企业状态请求参数。
+message ChangeEnterpriseStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+  // 操作原因。
+  string reason = 4;
+}
+// 重置企业密码请求参数。
+message ResetEnterprisePasswordRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 新密码。
+  string new_password = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 设置企业订阅请求参数。
+message SetEnterpriseSubscriptionRequest {
+  // 企业编号。
+  uint64 enterprise_id = 1;
+  // 套餐编号。
+  uint64 plan_id = 2;
+  // 状态。
+  string status = 3;
+  // 开始时间。
+  google.protobuf.Timestamp starts_at = 4;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 5;
+  // 是否自动续费。
+  bool auto_renew = 6;
+  // 期望的数据版本号。
+  uint64 expected_version = 7;
+  // 操作原因。
+  string reason = 8;
+}
+// 设置企业配额请求参数。
+message SetEnterpriseQuotaRequest {
+  // 企业编号。
+  uint64 enterprise_id = 1;
+  // 指标。
+  string metric = 2;
+  // 上限值。
+  int64 limit_value = 3;
+  // 周期。
+  string period = 4;
+  // 重置时间。
+  google.protobuf.Timestamp reset_at = 5;
+  // 操作原因。
+  string reason = 6;
+}

@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS ops_audit_logs;
+DROP TABLE IF EXISTS ops_outbox_events;
+DROP TABLE IF EXISTS wrk_task_leases;
+DROP TABLE IF EXISTS wrk_nodes;
+DROP TABLE IF EXISTS geo_analysis_results;
+DROP TABLE IF EXISTS geo_mentions;
+DROP TABLE IF EXISTS geo_citations;
+DROP TABLE IF EXISTS geo_answer_snapshots;
+DROP TABLE IF EXISTS geo_tasks;
+DROP TABLE IF EXISTS geo_monitor_plans;
+DROP TABLE IF EXISTS pub_tasks;
+DROP TABLE IF EXISTS pub_plans;

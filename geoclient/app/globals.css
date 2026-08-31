@@ -1,0 +1,93 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f4f6fb;
+  --foreground: #0f172a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  --color-app-bg: #f4f6fb;
+  --color-app-surface: #ffffff;
+  --color-app-card: #ffffff;
+  --color-app-elevated: #f8fafc;
+  --color-app-hover: #f1f5f9;
+
+  --color-app-border: #e2e8f0;
+  --color-app-border-strong: #cbd5e1;
+
+  --color-app-text: #0f172a;
+  --color-app-text-muted: #64748b;
+  --color-app-text-dim: #94a3b8;
+
+  --color-app-accent: #4f46e5;
+  --color-app-accent-light: #6366f1;
+  --color-app-accent-dark: #4338ca;
+  --color-app-accent-subtle: #eef2ff;
+
+  --color-app-success: #059669;
+  --color-app-success-subtle: #ecfdf5;
+  --color-app-warning: #d97706;
+  --color-app-warning-subtle: #fffbeb;
+  --color-app-danger: #dc2626;
+  --color-app-danger-subtle: #fef2f2;
+  --color-app-info: #4f46e5;
+  --color-app-info-subtle: #eef2ff;
+
+  --color-app-sidebar: #ffffff;
+  --color-app-sidebar-active: #ffffff;
+
+  --radius-app: 1rem;
+  --radius-app-lg: 1.25rem;
+
+  --shadow-card: 0 1px 3px rgb(15 23 42 / 0.06);
+  --shadow-card-hover: 0 4px 12px rgb(15 23 42 / 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+::selection {
+  background-color: #4f46e520;
+  color: #0f172a;
+}
+
+.drag-region {
+  -webkit-app-region: drag;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}

@@ -1,0 +1,453 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 品牌看板服务（高级报表，独立于 GeoMonitorService）。
+// 数据源：geo_answer_snapshots / geo_analysis_results / geo_mentions /
+//        geo_tasks / keywords / questions / pub_tasks / enterprises。
+// 复用 geo_monitor.go 的 dashboardLatestAnalysisJoin / dashboardRange /
+// buildDashboardTrendSeries 工具函数。
+service GeoBrandBoardService {
+  // 获取企业信息与顶栏 4 统计卡。
+  rpc GetBrandCompanyInfo(GetBrandBoardRequest) returns (BrandCompanyInfo) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取品牌看板企业信息"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/company-info"};
+  }
+  // 获取品牌推荐度（7 平台进度条）。
+  rpc GetBrandIndexTop(GetBrandBoardRequest) returns (BrandIndexTop) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取品牌推荐度"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/index-top"};
+  }
+  // 获取数据大盘（5 聚合指标 + 各平台分项）。
+  rpc GetBrandDashboard(GetBrandBoardRequest) returns (BrandDashboard) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取数据大盘"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/dashboard"};
+  }
+  // 获取主区数据（3 趋势折线 + 情感倾向表）。
+  rpc GetBrandIndexMain(GetBrandBoardRequest) returns (BrandIndexMain) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取主区趋势与情感"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/index-main"};
+  }
+  // 获取舆情分析（周结/月结）。
+  rpc GetBrandIndexBottom(GetBrandBoardRequest) returns (BrandIndexBottom) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取舆情分析"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/index-bottom"};
+  }
+  // 获取周月报摘要（环比 + 收录详情按问题词条）。
+  rpc GetBrandSummary(GetBrandSummaryRequest) returns (BrandSummary) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取周月报摘要"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/summary"};
+  }
+  // 优化记录：收录明细分页查询。
+  rpc ListBrandRecords(ListBrandRecordsRequest) returns (BrandRecordsPage) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取优化记录明细"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/records"};
+  }
+  // 优化记录：顶部统计卡。
+  rpc GetBrandOptimizeStats(GetBrandBoardRequest) returns (BrandOptimizeStats) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取优化统计卡"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/optimize-stats"};
+  }
+  // 信源分析：文章发布量/引用量/信源量 + 媒体分布 + Top10文章 + 发布趋势 + 信源平台分布。
+  rpc GetBrandSourceAnalysis(GetBrandSourceAnalysisRequest) returns (BrandSourceAnalysis) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取信源分析"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/source-analysis"};
+  }
+  // 竞品分析：各 AI 平台前 5 名品牌排序（本品牌 + 竞品混排）。
+  rpc GetCompetitorRanking(GetBrandBoardRequest) returns (CompetitorRankingPage) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取竞品品牌排序"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/competitor-ranking"};
+  }
+  // 竞品分析：空白词条列表（本品牌未出现、竞品出现的对话）。
+  rpc ListCompetitorBlankKeywords(ListCompetitorBlankKeywordsRequest) returns (CompetitorBlankKeywordsPage) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取空白词条列表"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/competitor-blank-keywords"};
+  }
+  // 竞品分析：竞品核心指标对比（可见度 / 采纳率 / AI 回答数 / top3 占比）。
+  rpc GetCompetitorCompare(GetBrandBoardRequest) returns (CompetitorComparePage) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取竞品对比指标"};
+    option (google.api.http) = {get: "/api/user/v1/brand-board/competitor-compare"};
+  }
+}
+
+// 品牌看板通用请求。
+// enterprise_id 必填（>0）；range 控制趋势分桶：7d（默认）/ month / year。
+// period_type + period_date：可选，当指定时按周/月范围替代 range。
+message GetBrandBoardRequest {
+  int64 enterprise_id = 1;
+  string range = 2;
+  string period_type = 3;
+  string period_date = 4;
+}
+
+// 周月报摘要请求。period_type: week / month。
+// period_date: 可选，ISO 日期 "2026-08-15"。周报表选取该日期所在的周，月报表选取该日期所在的月。
+// 不传则默认取当前周/当前月。
+message GetBrandSummaryRequest {
+  int64 enterprise_id = 1;
+  string period_type = 2;
+  string period_date = 3;
+}
+
+// 企业信息（顶栏 4 统计卡 + 名片）。
+message BrandCompanyInfo {
+  string enterprise_name = 1;
+  string brand_name = 2;
+  string website = 3;
+  int64 keyword_count = 4;
+  int64 term_count = 5;
+  int64 total_inclusion = 6;
+  int64 article_count = 7;
+  google.protobuf.Timestamp started_at = 8;
+  google.protobuf.Timestamp expires_at = 9;
+  repeated string brand_keywords = 10;
+}
+
+// 品牌推荐度。
+message BrandIndexTop {
+  repeated BrandRecommendation platforms = 1;
+}
+
+// 单平台推荐度。
+message BrandRecommendation {
+  string platform = 1;
+  int32 recommendation = 2;
+  int64 inclusion_count = 3;
+  double visibility_rate = 4;
+  int64 mention_count = 5;
+  string sentiment = 6;
+}
+
+// 数据大盘（5 聚合指标 + 各平台分项）。
+message BrandDashboard {
+  double visibility_rate = 1;
+  double top3_rate = 2;
+  double positive_rate = 3;
+  int64 mention_count = 4;
+  int64 dialogue_rounds = 5;
+  repeated BrandPlatformStat platforms = 6;
+}
+
+// 单平台数据大盘分项。
+message BrandPlatformStat {
+  string platform = 1;
+  double visibility_rate = 2;
+  int64 mention_count = 3;
+  string sentiment = 4;
+  int64 inclusion_count = 5;
+}
+
+// 主区数据（3 趋势折线 + 情感倾向表）。
+message BrandIndexMain {
+  repeated BrandTrendPoint inclusion_trend = 1;
+  repeated BrandTrendPoint visibility_trend = 2;
+  repeated BrandTrendPoint mention_trend = 3;
+  repeated BrandSentimentStat sentiment_breakdown = 4;
+}
+
+// 趋势数据点。date 格式 YYYY-MM-DD（year 范围用 YYYY-MM）。
+message BrandTrendPoint {
+  string date = 1;
+  int64 value = 2;
+  double rate = 3;
+}
+
+// 情感倾向统计。sentiment: positive/neutral/negative（前端显示 无/正/负）。
+message BrandSentimentStat {
+  string sentiment = 1;
+  int64 count = 2;
+  double rate = 3;
+}
+
+// 舆情分析。
+message BrandIndexBottom {
+  string period_type = 1;
+  repeated BrandOpinion opinions = 2;
+  // 负面事件明细列表。
+  repeated NegativeEvent negative_events = 3;
+}
+
+// 单条舆情总结（LLM 生成的分类总结建议）。
+message BrandOpinion {
+  string title = 1;
+  string summary = 2;
+  string sentiment = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}
+
+// 负面事件明细（单条 negative AI 回答）。
+message NegativeEvent {
+  // 平台名称（DeepSeek/Kimi 等）。
+  string platform = 1;
+  // 用户提问。
+  string question = 2;
+  // AI 回答摘要（前 200 字）。
+  string answer_preview = 3;
+  // 情感（固定 negative）。
+  string sentiment = 4;
+  // 查看链接（session_ref）。
+  string share_url = 5;
+  // 采集时间。
+  google.protobuf.Timestamp observed_at = 6;
+}
+
+// 周月报摘要。
+message BrandSummary {
+  string period_type = 1;
+  string period_start = 2;
+  string period_end = 3;
+  double visibility_rate = 4;
+  double visibility_delta = 5;
+  double top3_rate = 6;
+  double top3_rate_delta = 7;
+  int64 mention_count = 8;
+  int64 mention_delta = 9;
+  int64 total_inclusion = 10;
+  int64 inclusion_delta = 11;
+  repeated BrandQuestionStat questions = 12;
+}
+
+// 收录详情按问题词条聚合。
+message BrandQuestionStat {
+  string question = 1;
+  int64 total_count = 2;
+  int64 period_count = 3;
+}
+
+// === 优化记录消息 ===
+
+// 优化记录列表请求。
+message ListBrandRecordsRequest {
+  int64 enterprise_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+  // 平台筛选（inclusion_site_id），0=全部。
+  int64 inclusion_site_id = 4;
+  // 关键词筛选，空=全部。
+  string keyword = 5;
+  // 状态筛选：all / included / not_included，空=all。
+  string status_filter = 6;
+  // 情感筛选：positive / negative / neutral，空=全部。
+  string sentiment_filter = 7;
+}
+
+// 单条优化记录。
+message BrandRecord {
+  uint64 id = 1;
+  // 关键词文本。
+  string keyword = 2;
+  // AI 问题文本。
+  string question = 3;
+  // 平台名称。
+  string platform = 4;
+  // 平台图标 URL。
+  string platform_icon = 5;
+  // 是否收录。
+  bool included = 6;
+  // 提及次数（该 snapshot 内品牌出现的 mention 行数）。
+  int64 mention_count = 7;
+  // 品牌排名（JSON result_json.brandRank），0=无排名。
+  int32 brand_rank = 8;
+  // 情感倾向：positive / negative / neutral。
+  string sentiment = 9;
+  // 监测端：1=电脑端 2=移动端。
+  int32 terminal_type = 10;
+  // 对话时间（observed_at）。
+  google.protobuf.Timestamp observed_at = 11;
+  // 对话页面链接。
+  string session_ref = 12;
+  // 任务状态。
+  string task_status = 13;
+  // 联系方式曝光（AI回答中是否提及企业联系电话）。
+  bool contact_exposed = 14;
+}
+
+// 优化记录分页响应。
+message BrandRecordsPage {
+  repeated BrandRecord records = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+// 优化统计卡（顶部 6 统计）。
+message BrandOptimizeStats {
+  // 累计优化天数（服务开通至今）。
+  int64 total_optimize_days = 1;
+  // 累计达标天数（收录>0 的天数）。
+  int64 total_qualified_days = 2;
+  // 达标剩余天数（服务到期距今天）。
+  int64 remaining_days = 3;
+  // 今日收录条数。
+  int64 today_inclusion = 4;
+  // 今日电话收录次数（terminal_type=1）。
+  int64 today_pc_inclusion = 5;
+  // 今日官网收录次数（terminal_type=2）。
+  int64 today_mobile_inclusion = 6;
+}
+
+// === 信源分析消息 ===
+
+// 信源分析请求。range 控制趋势分桶：7d（默认）/ month / year。
+message GetBrandSourceAnalysisRequest {
+  int64 enterprise_id = 1;
+  string range = 2;
+}
+
+// 信源分析聚合响应。
+message BrandSourceAnalysis {
+  // 文章发布总量（status=succeeded 的 pub_tasks 数）。
+  int64 article_publish_count = 1;
+  // 文章引用总量（geo_citations 中 article_id IS NOT NULL 的行数）。
+  int64 article_citation_count = 2;
+  // 引用信源总量（geo_citations 中不重复 domain 数）。
+  int64 source_reference_count = 3;
+  // 媒体文章分布。
+  MediaArticleBreakdown media_breakdown = 4;
+  // Top10 文章引用排行。
+  repeated SourceArticleStat top_articles = 5;
+  // 文章发布趋势。
+  repeated ArticlePublishTrendPoint publish_trend = 6;
+  // Top10 信源平台分布。
+  repeated SourcePlatformStat top_source_platforms = 7;
+}
+
+// 媒体文章分布（按来源类型，对应 cfg_publish_channels.category：1=自媒体 2=官方媒体 3=KOL）。
+message MediaArticleBreakdown {
+  int64 total = 1;
+  // 自媒体文章数。
+  int64 self_media_count = 2;
+  // 官方媒体文章数。
+  int64 commercial_media_count = 3;
+  // KOL 文章数。
+  int64 official_kb_count = 4;
+}
+
+// Top10 文章引用统计。
+message SourceArticleStat {
+  // 排名（1-based）。
+  int32 rank = 1;
+  // 文章标题。
+  string title = 2;
+  // 引用次数。
+  int64 citation_count = 3;
+  // 文章 ID。
+  uint64 article_id = 4;
+  // 文章发布后的外部 URL（跳转链接）。
+  string url = 5;
+}
+
+// 文章发布趋势数据点。
+message ArticlePublishTrendPoint {
+  // 日期 YYYY-MM-DD（year 范围用 YYYY-MM）。
+  string date = 1;
+  // 当期发布数。
+  int64 count = 2;
+}
+
+// Top10 信源平台分布。
+message SourcePlatformStat {
+  // 排名（1-based）。
+  int32 rank = 1;
+  // 信源域名。
+  string domain = 2;
+  // 引用次数。
+  int64 citation_count = 3;
+  // 信源页面标题（用于前端显示中文名称）。
+  string title = 4;
+}
+
+// === 竞品分析消息 ===
+
+// 空白词条列表请求。
+message ListCompetitorBlankKeywordsRequest {
+  int64 enterprise_id = 1;
+  int32 page_size = 2;
+  string page_token = 3;
+}
+
+// 竞品品牌排序分页响应。
+message CompetitorRankingPage {
+  // 按 AI 平台分组的品牌排序。
+  repeated CompetitorPlatformRanking platforms = 1;
+}
+
+// 单个 AI 平台的品牌排序。
+message CompetitorPlatformRanking {
+  // 平台名称。
+  string platform = 1;
+  // 前 5 名品牌列表（按 rank 升序）。
+  repeated CompetitorRankItem items = 2;
+}
+
+// 单个品牌排序项（本品牌或竞品）。
+message CompetitorRankItem {
+  // 品牌/竞品名称。
+  string name = 1;
+  // 排名 1-5，0=无法判定。
+  int32 rank = 2;
+  // 是否本品牌（前端高亮）。
+  bool is_own_brand = 3;
+  // 提及数（按条数，一条回答出现N次算1次）。
+  int64 mention_count = 4;
+}
+
+// 空白词条分页响应。
+message CompetitorBlankKeywordsPage {
+  // 空白词条列表。
+  repeated CompetitorBlankKeyword items = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+// 单条空白词条。
+message CompetitorBlankKeyword {
+  // 关键词。
+  string keyword = 1;
+  // AI 问题文本。
+  string question = 2;
+  // 竞品词（该回答里出现的第一个竞品名）。
+  string competitor_text = 3;
+  // AI 平台名称。
+  string platform = 4;
+  // AI 问答时间（ISO 日期）。
+  string observed_at = 5;
+  // 对话页面链接（官方快照）。
+  string session_ref = 6;
+}
+
+// 竞品核心指标对比分页响应。
+message CompetitorComparePage {
+  // 对比列表（含本品牌 + 竞品，按 AI 回答数降序）。
+  repeated CompetitorCompareItem items = 1;
+  // 趋势日期序列（近7天）。
+  repeated string trend_dates = 2;
+  // 品牌趋势数据 map（key=品牌名，value=按日提及次数）。
+  map<string, CompetitorTrendValues> trend_data = 3;
+}
+
+// 品牌按日提及次数序列。
+message CompetitorTrendValues {
+  repeated int64 values = 1;
+}
+
+// 单个品牌/竞品的核心指标。
+message CompetitorCompareItem {
+  // 品牌/竞品名称。
+  string name = 1;
+  // 是否本品牌。
+  bool is_own_brand = 2;
+  // 品牌可见度（0-1，双精度）。
+  double visibility_rate = 3;
+  // 内容采纳率（0-1）。
+  double adoption_rate = 4;
+  // AI 回答数。
+  int64 answer_count = 5;
+  // top3 占比（0-1）。
+  double top3_rate = 6;
+}

@@ -1,0 +1,323 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 管理平台侧工作节点；工作节点执行接口使用独立受众和服务。
+service WorkerService {
+  // 注册工作节点；仅平台管理员可调用。
+  rpc RegisterWorker(RegisterWorkerRequest) returns (RegisterWorkerReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "注册工作节点"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/workers/register"
+      body: "*"
+    };
+  }
+  // 查询工作节点列表。
+  rpc ListWorkers(ListWorkersRequest) returns (ListWorkersReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询工作节点列表"};
+    option (google.api.http) = {get: "/api/admin/v1/workers"};
+  }
+  // 获取工作节点。
+  rpc GetWorker(GetWorkerRequest) returns (WorkerDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取工作节点"};
+    option (google.api.http) = {get: "/api/admin/v1/workers/{id}"};
+  }
+  // 变更工作节点状态。
+  rpc ChangeWorkerStatus(ChangeWorkerStatusRequest) returns (WorkerDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更工作节点状态"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/workers/{id}/status"
+      body: "*"
+    };
+  }
+}
+
+// 工作节点执行服务；每个请求使用注册时签发的工作节点令牌鉴权。
+service WorkerExecutionService {
+  // 上报工作节点心跳。
+  rpc Heartbeat(WorkerHeartbeatRequest) returns (WorkerHeartbeatReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "上报工作节点心跳"};
+    option (google.api.http) = {
+      post: "/api/worker/v1/heartbeat"
+      body: "*"
+    };
+  }
+  // 领取一个待执行任务。
+  rpc ClaimTask(ClaimTaskRequest) returns (ClaimTaskReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "领取工作任务"};
+    option (google.api.http) = {
+      post: "/api/worker/v1/tasks:claim"
+      body: "*"
+    };
+  }
+  // 续租任务租约。
+  rpc RenewLease(RenewLeaseRequest) returns (TaskLease) {
+    option (gnostic.openapi.v3.operation) = {summary: "续租任务租约"};
+    option (google.api.http) = {
+      post: "/api/worker/v1/leases/{lease_id}:renew"
+      body: "*"
+    };
+  }
+  // 释放任务租约。
+  rpc ReleaseLease(ReleaseLeaseRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "释放任务租约"};
+    option (google.api.http) = {
+      post: "/api/worker/v1/leases/{lease_id}:release"
+      body: "*"
+    };
+  }
+  // 上报任务执行结果与检测证据。
+  rpc ReportTaskResult(ReportTaskResultRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "上报任务执行结果"};
+    option (google.api.http) = {
+      post: "/api/worker/v1/tasks/{task_id}:report"
+      body: "*"
+    };
+  }
+}
+// 工作节点数据。
+message WorkerNode {
+  // 唯一编号。
+  uint64 id = 1;
+  // 节点编号。
+  string node_id = 2;
+  // 名称。
+  string name = 3;
+  // 状态。
+  string status = 4;
+  // 审批状态。
+  string approval_status = 5;
+  // 客户端版本。
+  string client_version = 6;
+  // 支持的驱动版本 JSON。
+  string driver_versions_json = 7;
+  // 能力配置 JSON。
+  string capabilities_json = 8;
+  // 工作节点系统信息 JSON。
+  string system_info_json = 9;
+  // 最大并发数。
+  uint32 max_concurrency = 10;
+  // 最近心跳时间。
+  google.protobuf.Timestamp last_heartbeat_at = 11;
+  // 已撤销时间。
+  google.protobuf.Timestamp revoked_at = 12;
+  // 数据版本号。
+  uint64 version = 13;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 14;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 15;
+}
+// 工作节点心跳记录数据。
+message WorkerHeartbeatRecord {
+  // 唯一编号。
+  uint64 id = 1;
+  // 活跃任务数量。
+  uint32 active_tasks = 2;
+  // 运行指标 JSON。
+  string metrics_json = 3;
+  // 接收时间。
+  google.protobuf.Timestamp received_at = 4;
+}
+// 工作节点租约数据。
+message WorkerLease {
+  // 唯一编号。
+  uint64 id = 1;
+  // 任务类型。
+  string task_type = 2;
+  // 任务编号。
+  uint64 task_id = 3;
+  // 状态。
+  string status = 4;
+  // 租用时间。
+  google.protobuf.Timestamp leased_at = 5;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 6;
+  // 已释放时间。
+  google.protobuf.Timestamp released_at = 7;
+  // 释放原因。
+  string release_reason = 8;
+}
+// 工作节点详情数据。
+message WorkerDetail {
+  // 工作节点。
+  WorkerNode worker = 1;
+  // 心跳记录。
+  repeated WorkerHeartbeatRecord heartbeats = 2;
+  // 租约列表。
+  repeated WorkerLease leases = 3;
+}
+// 查询工作节点列表请求参数。
+message ListWorkersRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  string status = 3;
+  // 审批状态。
+  string approval_status = 4;
+  // 搜索关键词。
+  string keyword = 5;
+}
+// 查询工作节点列表响应结果。
+message ListWorkersReply {
+  // 数据列表。
+  repeated WorkerNode items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取工作节点请求参数。
+message GetWorkerRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 变更工作节点状态请求参数。
+message ChangeWorkerStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+  // 操作原因。
+  string reason = 4;
+}
+// 任务租约数据。
+message TaskLease {
+  // 唯一编号。
+  uint64 id = 1;
+  // 任务类型。
+  string task_type = 2;
+  // 任务编号。
+  uint64 task_id = 3;
+  // 租约令牌。
+  string lease_token = 4;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 5;
+  // 租约版本。
+  uint64 lease_version = 6;
+  // 任务快照 JSON。
+  string task_snapshot_json = 7;
+  // 授权凭据密文载荷。
+  bytes credential_payload = 8;
+}
+// 注册工作节点请求参数。
+message RegisterWorkerRequest {
+  // 节点编号。
+  string node_id = 1;
+  // 名称。
+  string name = 2;
+  // 客户端版本。
+  string client_version = 3;
+  // 能力配置 JSON。
+  string capabilities_json = 4;
+  // 工作节点系统信息 JSON。
+  string system_info_json = 5;
+  // 最大并发数。
+  uint32 max_concurrency = 6;
+}
+// 注册工作节点响应结果。
+message RegisterWorkerReply {
+  // 工作节点。
+  WorkerNode worker = 1;
+  // 工作节点令牌。
+  string worker_token = 2;
+}
+// 工作节点心跳请求参数。
+message WorkerHeartbeatRequest {
+  // 工作节点令牌。
+  string worker_token = 1;
+  // 客户端版本。
+  string client_version = 2;
+  // 能力配置 JSON。
+  string capabilities_json = 3;
+  // 工作节点系统信息 JSON。
+  string system_info_json = 4;
+  // 活跃任务数量。
+  uint32 active_tasks = 5;
+}
+// 工作节点心跳响应结果。
+message WorkerHeartbeatReply {
+  // 任务是否已受理。
+  bool accepted = 1;
+  // 已撤销。
+  bool revoked = 2;
+  // 是否强制升级。
+  bool force_upgrade = 3;
+  // 最新客户端版本。
+  string latest_version = 4;
+}
+// 领取任务请求参数。
+message ClaimTaskRequest {
+  // 工作节点令牌。
+  string worker_token = 1;
+  // 任务类型列表。
+  repeated string task_types = 2;
+  // 发布渠道编号列表。
+  repeated uint64 publish_channel_ids = 3;
+  // 检测模型站点编号列表。
+  repeated uint64 inclusion_site_ids = 4;
+  // 指定任务编号；为 0 时领取队列中的下一个任务。
+  uint64 task_id = 5;
+}
+// 领取任务响应结果。
+message ClaimTaskReply {
+  // 租约。
+  TaskLease lease = 1;
+}
+// 续租租约请求参数。
+message RenewLeaseRequest {
+  // 租约编号。
+  uint64 lease_id = 1;
+  // 租约令牌。
+  string lease_token = 2;
+  // 租约版本。
+  uint64 lease_version = 3;
+}
+// 释放租约请求参数。
+message ReleaseLeaseRequest {
+  // 租约编号。
+  uint64 lease_id = 1;
+  // 租约令牌。
+  string lease_token = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 上报任务结果请求参数。
+message ReportTaskResultRequest {
+  // 任务类型。
+  string task_type = 1;
+  // 任务编号。
+  uint64 task_id = 2;
+  // 租约编号。
+  uint64 lease_id = 3;
+  // 租约令牌。
+  string lease_token = 4;
+  // 幂等键。
+  string idempotency_key = 5;
+  // 状态。
+  string status = 6;
+  // 结果数据 JSON。
+  string result_json = 7;
+  // 证据数据 JSON。
+  string evidence_json = 8;
+  // 错误分类。
+  string error_category = 9;
+  // 错误编码。
+  string error_code = 10;
+  // 错误信息。
+  string error_message = 11;
+  // 耗时毫秒数。
+  uint64 duration_ms = 12;
+  // 客户端版本。
+  string client_version = 13;
+}

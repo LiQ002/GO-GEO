@@ -1,0 +1,114 @@
+syntax = "proto3";
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// 品牌服务。
+service BrandService {
+  // 创建品牌。
+  rpc CreateBrand(CreateBrandRequest) returns (Brand) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建品牌"};
+    option (google.api.http) = {
+      post: "/api/user/v1/brands"
+      body: "*"
+    };
+  }
+  // 获取品牌。
+  rpc GetBrand(GetBrandRequest) returns (Brand) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取品牌"};
+    option (google.api.http) = {get: "/api/user/v1/brands/{id}"};
+  }
+  // 查询品牌列表。
+  rpc ListBrands(ListBrandsRequest) returns (ListBrandsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询品牌列表"};
+    option (google.api.http) = {get: "/api/user/v1/brands"};
+  }
+  // 更新品牌。
+  rpc UpdateBrand(UpdateBrandRequest) returns (Brand) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新品牌"};
+    option (google.api.http) = {
+      put: "/api/user/v1/brands/{brand.id}"
+      body: "*"
+    };
+  }
+  // 删除品牌。
+  rpc DeleteBrand(DeleteBrandRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除品牌"};
+    option (google.api.http) = {delete: "/api/user/v1/brands/{id}"};
+  }
+}
+// 品牌数据。
+message Brand {
+  // 唯一编号。
+  uint64 id = 1;
+  // 名称。
+  string name = 2;
+  // 品牌别名 JSON。
+  string aliases_json = 3;
+  // 官方域名。
+  string official_domain = 4;
+  // 说明。
+  string description = 5;
+  // 行业。
+  string industry = 6;
+  // 区域。
+  string region = 7;
+  // 目标受众。
+  string target_audience = 8;
+  // 核心值。
+  string core_value = 9;
+  // 状态。
+  int32 status = 10;
+  // 数据版本号。
+  uint64 version = 11;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 12;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 13;
+}
+// 创建品牌请求参数。
+message CreateBrandRequest {
+  // 品牌。
+  Brand brand = 1;
+}
+// 获取品牌请求参数。
+message GetBrandRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询品牌列表请求参数。
+message ListBrandsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 搜索关键词。
+  string keyword = 4;
+}
+// 查询品牌列表响应结果。
+message ListBrandsReply {
+  // 数据列表。
+  repeated Brand items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新品牌请求参数。
+message UpdateBrandRequest {
+  // 品牌。
+  Brand brand = 1;
+}
+// 删除品牌请求参数。
+message DeleteBrandRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}

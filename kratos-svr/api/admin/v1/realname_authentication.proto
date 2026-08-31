@@ -1,0 +1,139 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 实名审核服务。
+service RealnameAuthenticationService {
+  // 查询实名审核列表。
+  rpc ListRealnameAuthentications(ListRealnameAuthenticationsRequest) returns (ListRealnameAuthenticationsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询实名审核列表"};
+    option (google.api.http) = {get: "/api/admin/v1/realname-authentications"};
+  }
+  // 审核通过实名认证。
+  rpc ApproveRealnameAuthentication(ApproveRealnameAuthenticationRequest) returns (RealnameAuthenticationDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "审核通过实名认证"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/realname-authentications/{id}/approve"
+      body: "*"
+    };
+  }
+  // 驳回实名认证。
+  rpc RejectRealnameAuthentication(RejectRealnameAuthenticationRequest) returns (RealnameAuthenticationDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "驳回实名认证"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/realname-authentications/{id}/reject"
+      body: "*"
+    };
+  }
+  // 删除实名认证记录。
+  rpc DeleteRealnameAuthentication(DeleteRealnameAuthenticationRequest) returns (DeleteRealnameAuthenticationReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除实名认证记录"};
+    option (google.api.http) = {
+      delete: "/api/admin/v1/realname-authentications/{id}"
+    };
+  }
+}
+
+// 实名认证数据。
+message RealnameAuthentication {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 认证类型。
+  string type = 3;
+  // 状态。
+  string status = 4;
+  // 真实姓名。
+  string real_name = 5;
+  // 身份证号。
+  string id_card_number = 6;
+  // 手机号。
+  string mobile = 7;
+  // 企业名称。
+  string company_name = 8;
+  // 营业执照注册号。
+  string registration_no = 9;
+  // 营业执照图片URL。
+  string license_image_url = 10;
+  // 身份证图片URL。
+  string id_card_image_url = 11;
+  // 驳回原因。
+  string reject_reason = 12;
+  // 审核人编号。
+  uint64 reviewed_by = 13;
+  // 审核时间。
+  google.protobuf.Timestamp reviewed_at = 14;
+  // 提交时间。
+  google.protobuf.Timestamp submitted_at = 15;
+}
+
+// 实名认证详情（含企业信息）。
+message RealnameAuthenticationDetail {
+  // 实名认证。
+  RealnameAuthentication authentication = 1;
+  // 企业名称。
+  string enterprise_name = 2;
+  // 企业编码。
+  string enterprise_code = 3;
+  // 账号用户名。
+  string username = 4;
+}
+
+// 查询实名审核列表请求参数。
+message ListRealnameAuthenticationsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 搜索关键词。
+  string keyword = 3;
+  // 状态。
+  string status = 4;
+  // 认证类型。
+  string type = 5;
+}
+
+// 查询实名审核列表响应结果。
+message ListRealnameAuthenticationsReply {
+  // 数据列表。
+  repeated RealnameAuthenticationDetail items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 审核通过实名认证请求参数。
+message ApproveRealnameAuthenticationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 审核备注。
+  string remark = 2;
+}
+
+// 驳回实名认证请求参数。
+message RejectRealnameAuthenticationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 驳回原因。
+  string reject_reason = 2;
+}
+
+// 删除实名认证记录请求参数。
+message DeleteRealnameAuthenticationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 删除实名认证记录响应结果。
+message DeleteRealnameAuthenticationReply {
+  // 成功标记。
+  bool success = 1;
+}

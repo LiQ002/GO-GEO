@@ -1,0 +1,88 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 计费配置服务：管理 12 项计费项单价与计费项注册表。
+service BillingConfigService {
+  // 获取计费项单价列表。
+  rpc GetBillingUnitCosts(GetBillingUnitCostsRequest) returns (BillingUnitCostsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取计费项单价列表"};
+    option (google.api.http) = {get: "/api/admin/v1/billing/unit-costs"};
+  }
+  // 更新单项计费单价。
+  rpc UpdateBillingUnitCost(UpdateBillingUnitCostRequest) returns (BillingUnitCostsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新单项计费单价"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/billing/unit-costs/{action}"
+      body: "*"
+    };
+  }
+  // 恢复默认单价。
+  rpc ResetBillingUnitCosts(ResetBillingUnitCostsRequest) returns (BillingUnitCostsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "恢复默认单价"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/billing/unit-costs:reset"
+      body: "*"
+    };
+  }
+  // 获取计费项注册表。
+  rpc GetActionRegistry(GetActionRegistryRequest) returns (ActionRegistryReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取计费项注册表"};
+    option (google.api.http) = {get: "/api/admin/v1/billing/action-registry"};
+  }
+}
+
+// 计费项单价。
+message BillingUnitCost {
+  // 计费项 key。
+  string action = 1;
+  // 标题。
+  string title = 2;
+  // 点数（点，运行时换算为毫点）。
+  double points = 3;
+  // 计价单位。
+  string unit = 4;
+  // 扣费模式：both / quota_only / points_only。
+  string charge_type = 5;
+  // 关联额度指标。
+  string quota_metric = 6;
+}
+
+message GetBillingUnitCostsRequest {}
+
+message BillingUnitCostsReply {
+  repeated BillingUnitCost items = 1;
+}
+
+message UpdateBillingUnitCostRequest {
+  string action = 1;
+  double points = 2;
+  string charge_type = 3;
+  string quota_metric = 4;
+  uint64 operator_id = 5;
+  string reason = 6;
+}
+
+message ResetBillingUnitCostsRequest {
+  uint64 operator_id = 1;
+  string reason = 2;
+}
+
+// 计费项注册表条目。
+message ActionRegistryEntry {
+  string action = 1;
+  bool implemented = 2;
+  string biz_entry = 3;
+  string status = 4;
+}
+
+message GetActionRegistryRequest {}
+
+message ActionRegistryReply {
+  repeated ActionRegistryEntry items = 1;
+}

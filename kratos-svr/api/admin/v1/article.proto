@@ -1,0 +1,191 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 文章服务。
+service ArticleService {
+  // 查询文章列表。
+  rpc ListArticles(ListArticlesRequest) returns (ListArticlesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询文章列表"};
+    option (google.api.http) = {get: "/api/admin/v1/articles"};
+  }
+  // 获取文章。
+  rpc GetArticle(GetArticleRequest) returns (ArticleDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取文章"};
+    option (google.api.http) = {get: "/api/admin/v1/articles/{id}"};
+  }
+  // 审核文章。
+  rpc ReviewArticle(ReviewArticleRequest) returns (ArticleDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "审核文章"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/articles/{id}/review"
+      body: "*"
+    };
+  }
+  // 归档文章。
+  rpc ArchiveArticle(ArchiveArticleRequest) returns (ArticleDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "归档文章"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/articles/{id}/archive"
+      body: "*"
+    };
+  }
+}
+
+// 文章数据。
+message Article {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 企业名称。
+  string enterprise_name = 3;
+  // 品牌编号。
+  uint64 brand_id = 4;
+  // 品牌名称。
+  string brand_name = 5;
+  // 文章类型编号。
+  optional uint64 article_type_id = 6;
+  // 文章类型名称。
+  string article_type_name = 7;
+  // 标题。
+  string title = 8;
+  // 内容摘要。
+  string summary = 9;
+  // Markdown 格式正文。
+  string content_markdown = 10;
+  // HTML 格式正文。
+  string content_html = 11;
+  // 状态。
+  string status = 12;
+  // 来源。
+  string source = 13;
+  // 当前版本编号。
+  optional uint64 current_version_id = 14;
+  // 最新快照编号。
+  optional uint64 latest_snapshot_id = 15;
+  // 质量评分。
+  double quality_score = 16;
+  // 质量检查结果 JSON。
+  string quality_result_json = 17;
+  // 发布时间。
+  google.protobuf.Timestamp published_at = 18;
+  // 数据版本号。
+  uint64 version = 19;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 20;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 21;
+}
+
+// 文章版本数据。
+message ArticleVersion {
+  // 唯一编号。
+  uint64 id = 1;
+  // 版本序号。
+  uint32 version_number = 2;
+  // 标题。
+  string title = 3;
+  // 内容摘要。
+  string summary = 4;
+  // 变更来源。
+  string change_source = 5;
+  // 变更摘要。
+  string change_summary = 6;
+  // 操作人类型。
+  string operator_type = 7;
+  // 操作人编号。
+  uint64 operator_id = 8;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// 文章审核记录数据。
+message ArticleReview {
+  // 唯一编号。
+  uint64 id = 1;
+  // 操作类型。
+  string action = 2;
+  // 起始状态。
+  string from_status = 3;
+  // 结束状态。
+  string to_status = 4;
+  // 审核人类型。
+  string reviewer_type = 5;
+  // 审核人编号。
+  uint64 reviewer_id = 6;
+  // 操作原因。
+  string reason = 7;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 8;
+}
+
+// 文章详情数据。
+message ArticleDetail {
+  // 文章。
+  Article article = 1;
+  // 版本列表。
+  repeated ArticleVersion versions = 2;
+  // 审核记录。
+  repeated ArticleReview reviews = 3;
+}
+
+// 查询文章列表请求参数。
+message ListArticlesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  uint64 enterprise_id = 3;
+  // 品牌编号。
+  uint64 brand_id = 4;
+  // 状态。
+  string status = 5;
+  // 来源。
+  string source = 6;
+  // 搜索关键词。
+  string keyword = 7;
+  // 最小质量评分。
+  optional double min_quality_score = 8;
+}
+// 查询文章列表响应结果。
+message ListArticlesReply {
+  // 数据列表。
+  repeated Article items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取文章请求参数。
+message GetArticleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 审核文章请求参数。
+message ReviewArticleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+  // 操作原因。
+  string reason = 4;
+}
+// 归档文章请求参数。
+message ArchiveArticleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作原因。
+  string reason = 3;
+}

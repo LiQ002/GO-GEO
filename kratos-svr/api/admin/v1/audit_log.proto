@@ -1,0 +1,101 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+// 审计日志服务。
+service AuditLogService {
+  // 查询审计日志列表。
+  rpc ListAuditLogs(ListAuditLogsRequest) returns (ListAuditLogsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询审计日志列表"};
+    option (google.api.http) = {get: "/api/admin/v1/audit-logs"};
+  }
+  // 获取审计日志。
+  rpc GetAuditLog(GetAuditLogRequest) returns (AuditLog) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取审计日志"};
+    option (google.api.http) = {get: "/api/admin/v1/audit-logs/{id}"};
+  }
+}
+// 审计日志数据。
+message AuditLog {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  optional uint64 enterprise_id = 2;
+  // 企业名称。
+  string enterprise_name = 3;
+  // 操作者类型。
+  string actor_type = 4;
+  // 操作者编号。
+  uint64 actor_id = 5;
+  // 操作者名称。
+  string actor_name = 6;
+  // 受众。
+  string audience = 7;
+  // 操作类型。
+  string action = 8;
+  // 资源类型。
+  string resource_type = 9;
+  // 资源编号。
+  string resource_id = 10;
+  // 结果。
+  string result = 11;
+  // 操作原因。
+  string reason = 12;
+  // 变更前数据 JSON。
+  string before_json = 13;
+  // 变更后数据 JSON。
+  string after_json = 14;
+  // IP 地址。
+  string ip_address = 15;
+  // 用户代理商。
+  string user_agent = 16;
+  // 请求编号。
+  string request_id = 17;
+  // 链路追踪编号。
+  string trace_id = 18;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 19;
+}
+// 查询审计日志列表请求参数。
+message ListAuditLogsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  optional uint64 enterprise_id = 3;
+  // 操作者类型。
+  string actor_type = 4;
+  // 操作者编号。
+  uint64 actor_id = 5;
+  // 操作类型。
+  string action = 6;
+  // 资源类型。
+  string resource_type = 7;
+  // 结果。
+  string result = 8;
+  // 请求编号。
+  string request_id = 9;
+  // 开始时间。
+  google.protobuf.Timestamp started_at = 10;
+  // 结束时间。
+  google.protobuf.Timestamp ended_at = 11;
+}
+// 查询审计日志列表响应结果。
+message ListAuditLogsReply {
+  // 数据列表。
+  repeated AuditLog items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取审计日志请求参数。
+message GetAuditLogRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}

@@ -1,0 +1,180 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 订阅订单服务：一张表承载开通/续费/加购/充值/退款五类交易。
+service SubscriptionOrderService {
+  // 查询订单列表。
+  rpc ListSubscriptionOrders(ListSubscriptionOrdersRequest) returns (ListSubscriptionOrdersReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询订单列表"};
+    option (google.api.http) = {get: "/api/admin/v1/subscription-orders"};
+  }
+  // 获取订单详情。
+  rpc GetSubscriptionOrder(GetSubscriptionOrderRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取订单详情"};
+    option (google.api.http) = {get: "/api/admin/v1/subscription-orders/{id}"};
+  }
+  // 确认到账（pending → approved）。
+  rpc ConfirmReceipt(ConfirmReceiptRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "确认到账"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/{id}/confirm"
+      body: "*"
+    };
+  }
+  // 取消订单。
+  rpc CancelOrder(CancelOrderRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "取消订单"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/{id}/cancel"
+      body: "*"
+    };
+  }
+  // 管理员开通套餐。
+  rpc OpenPlan(OpenPlanRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "管理员开通套餐"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/open-plan"
+      body: "*"
+    };
+  }
+  // 续费。
+  rpc RenewSubscription(RenewSubscriptionRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "续费"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/renew"
+      body: "*"
+    };
+  }
+  // 加购额度。
+  rpc AddonQuota(AddonQuotaRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "加购额度"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/addon"
+      body: "*"
+    };
+  }
+  // 充值点数。
+  rpc RechargeCredits(RechargeCreditsRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "充值点数"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/recharge"
+      body: "*"
+    };
+  }
+  // 退款。
+  rpc RefundOrder(RefundOrderRequest) returns (SubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "退款"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/subscription-orders/refund"
+      body: "*"
+    };
+  }
+}
+
+// 订单数据。
+message SubscriptionOrder {
+  uint64 id = 1;
+  string order_no = 2;
+  uint64 enterprise_id = 3;
+  optional uint64 plan_id = 4;
+  string order_type = 5;
+  string cycle = 6;
+  int64 amount_minor_units = 7;
+  string currency = 8;
+  optional int64 credits_amount = 9;
+  string addon_quota_metric = 10;
+  optional int64 addon_quota_amount = 11;
+  optional uint64 renew_from_subscription_id = 12;
+  optional uint64 refund_reference_order_id = 13;
+  optional int64 points_before = 14;
+  optional int64 points_after = 15;
+  string status = 16;
+  string source = 17;
+  google.protobuf.Timestamp paid_at = 18;
+  google.protobuf.Timestamp approved_at = 19;
+  optional uint64 approved_by = 20;
+  string remark = 21;
+  google.protobuf.Timestamp created_at = 22;
+  google.protobuf.Timestamp updated_at = 23;
+  string enterprise_name = 24;
+  string plan_name = 25;
+}
+
+message ListSubscriptionOrdersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  optional uint64 enterprise_id = 3;
+  optional string order_type = 4;
+  optional string status = 5;
+  optional string source = 6;
+  string keyword = 7;
+}
+
+message ListSubscriptionOrdersReply {
+  repeated SubscriptionOrder items = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+message GetSubscriptionOrderRequest {
+  uint64 id = 1;
+}
+
+message ConfirmReceiptRequest {
+  uint64 id = 1;
+  uint64 operator_id = 2;
+  string remark = 3;
+}
+
+message CancelOrderRequest {
+  uint64 id = 1;
+  uint64 operator_id = 2;
+  string remark = 3;
+}
+
+message OpenPlanRequest {
+  uint64 enterprise_id = 1;
+  uint64 plan_id = 2;
+  string cycle = 3;
+  uint64 operator_id = 4;
+  string remark = 5;
+}
+
+message RenewSubscriptionRequest {
+  uint64 enterprise_id = 1;
+  uint64 plan_id = 2;
+  string cycle = 3;
+  optional uint64 renew_from_subscription_id = 4;
+  uint64 operator_id = 5;
+  string remark = 6;
+}
+
+message AddonQuotaRequest {
+  uint64 enterprise_id = 1;
+  string addon_quota_metric = 2;
+  int64 addon_quota_amount = 3;
+  int64 amount_minor_units = 4;
+  uint64 operator_id = 5;
+  string remark = 6;
+}
+
+message RechargeCreditsRequest {
+  uint64 enterprise_id = 1;
+  int64 credits_amount = 2;
+  int64 amount_minor_units = 3;
+  uint64 operator_id = 4;
+  string remark = 5;
+}
+
+message RefundOrderRequest {
+  uint64 refund_reference_order_id = 1;
+  uint64 operator_id = 2;
+  string remark = 3;
+}

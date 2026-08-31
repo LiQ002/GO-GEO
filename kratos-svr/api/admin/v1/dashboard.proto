@@ -1,0 +1,97 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+// 运营总览服务。
+service DashboardService {
+  // 获取运营总览。
+  rpc GetDashboard(GetDashboardRequest) returns (Dashboard) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取运营总览"};
+    option (google.api.http) = {get: "/api/admin/v1/dashboard"};
+  }
+}
+// 总览指标数据。
+message DashboardMetric {
+  // 键名。
+  string key = 1;
+  // 标签。
+  string label = 2;
+  // 值。
+  int64 value = 3;
+  // 对比值。
+  int64 comparison_value = 4;
+}
+// 总览趋势数据。
+message DashboardTrend {
+  // 日期。
+  string date = 1;
+  // 文章数量。
+  int64 articles = 2;
+  // 发布成功。
+  int64 publish_succeeded = 3;
+  // GEO 检测成功数量。
+  int64 geo_succeeded = 4;
+  // 失败任务数量。
+  int64 failed_tasks = 5;
+}
+// 总览告警数据。
+message DashboardAlert {
+  // 唯一编号。
+  uint64 id = 1;
+  // 严重程度。
+  string severity = 2;
+  // 标题。
+  string title = 3;
+  // 资源类型。
+  string resource_type = 4;
+  // 资源编号。
+  string resource_id = 5;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 6;
+}
+// 总览平台发布统计。
+message DashboardPlatformStat {
+  // 平台编码。
+  string platform = 1;
+  // 平台名称。
+  string label = 2;
+  // 发布数量。
+  int64 count = 3;
+  // 成功率（0-1 小数）。
+  double success_rate = 4;
+}
+// 总览最近活动。
+message DashboardActivity {
+  // 唯一编号。
+  uint64 id = 1;
+  // 活动类型（success/failed/started）。
+  string type = 2;
+  // 活动描述。
+  string message = 3;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 4;
+}
+// 运营总览数据。
+message Dashboard {
+  // 指标集合。
+  repeated DashboardMetric metrics = 1;
+  // 趋势列表。
+  repeated DashboardTrend trends = 2;
+  // 告警列表。
+  repeated DashboardAlert alerts = 3;
+  // 生成时间。
+  google.protobuf.Timestamp generated_at = 4;
+  // 平台发布统计。
+  repeated DashboardPlatformStat platform_stats = 5;
+  // 最近活动。
+  repeated DashboardActivity activities = 6;
+}
+// 获取运营总览请求参数。
+message GetDashboardRequest {
+  // 趋势天数。
+  int32 trend_days = 1;
+}

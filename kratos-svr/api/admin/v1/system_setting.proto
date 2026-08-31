@@ -1,0 +1,112 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+// 系统配置服务。
+service SystemSettingService {
+  // 创建系统配置。
+  rpc CreateSystemSetting(CreateSystemSettingRequest) returns (SystemSetting) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建系统配置"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/system-settings"
+      body: "*"
+    };
+  }
+  // 获取系统配置。
+  rpc GetSystemSetting(GetSystemSettingRequest) returns (SystemSetting) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取系统配置"};
+    option (google.api.http) = {get: "/api/admin/v1/system-settings/{id}"};
+  }
+  // 查询系统配置项列表。
+  rpc ListSystemSettings(ListSystemSettingsRequest) returns (ListSystemSettingsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询系统配置项列表"};
+    option (google.api.http) = {get: "/api/admin/v1/system-settings"};
+  }
+  // 更新系统配置。
+  rpc UpdateSystemSetting(UpdateSystemSettingRequest) returns (SystemSetting) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新系统配置"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/system-settings/{setting.id}"
+      body: "*"
+    };
+  }
+  // 删除系统配置。
+  rpc DeleteSystemSetting(DeleteSystemSettingRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除系统配置"};
+    option (google.api.http) = {delete: "/api/admin/v1/system-settings/{id}"};
+  }
+}
+// 系统配置数据。
+message SystemSetting {
+  // 唯一编号。
+  uint64 id = 1;
+  // 命名空间。
+  string namespace = 2;
+  // 键名。
+  string key = 3;
+  // 配置值 JSON。
+  string value_json = 4;
+  // 说明。
+  string description = 5;
+  // 是否为敏感数据。
+  bool sensitive = 6;
+  // 数据版本号。
+  uint64 version = 7;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 8;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 9;
+}
+// 创建系统配置请求参数。
+message CreateSystemSettingRequest {
+  // 配置项。
+  SystemSetting setting = 1;
+  // 操作原因。
+  string reason = 2;
+}
+// 获取系统配置请求参数。
+message GetSystemSettingRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询系统配置项列表请求参数。
+message ListSystemSettingsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 命名空间。
+  string namespace = 3;
+  // 搜索关键词。
+  string keyword = 4;
+}
+// 查询系统配置项列表响应结果。
+message ListSystemSettingsReply {
+  // 数据列表。
+  repeated SystemSetting items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新系统配置请求参数。
+message UpdateSystemSettingRequest {
+  // 配置项。
+  SystemSetting setting = 1;
+  // 操作原因。
+  string reason = 2;
+}
+// 删除系统配置请求参数。
+message DeleteSystemSettingRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作原因。
+  string reason = 3;
+}

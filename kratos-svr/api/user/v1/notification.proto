@@ -1,0 +1,113 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 提供企业账号通知收件箱查询与已读管理；通知由平台工作流创建。
+service NotificationService {
+  // 获取通知。
+  rpc GetNotification(GetNotificationRequest) returns (Notification) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取通知"};
+    option (google.api.http) = {get: "/api/user/v1/notifications/{id}"};
+  }
+  // 查询通知列表。
+  rpc ListNotifications(ListNotificationsRequest) returns (ListNotificationsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询通知列表"};
+    option (google.api.http) = {get: "/api/user/v1/notifications"};
+  }
+  // 获取未读通知数量。
+  rpc GetUnreadNotificationCount(google.protobuf.Empty) returns (UnreadNotificationCountReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取未读通知数量"};
+    option (google.api.http) = {get: "/api/user/v1/notifications:unread-count"};
+  }
+  // 标记通知已读。
+  rpc MarkNotificationRead(MarkNotificationReadRequest) returns (Notification) {
+    option (gnostic.openapi.v3.operation) = {summary: "标记通知已读"};
+    option (google.api.http) = {
+      post: "/api/user/v1/notifications/{id}:mark-read"
+      body: "*"
+    };
+  }
+  // 标记全部通知已读。
+  rpc MarkAllNotificationsRead(google.protobuf.Empty) returns (MarkAllNotificationsReadReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "标记全部通知已读"};
+    option (google.api.http) = {
+      post: "/api/user/v1/notifications:mark-all-read"
+      body: "*"
+    };
+  }
+}
+
+// 通知数据。
+message Notification {
+  // 唯一编号。
+  uint64 id = 1;
+  // 渠道。
+  string channel = 2;
+  // 模板编码。
+  string template_code = 3;
+  // 业务载荷 JSON。
+  string payload_json = 4;
+  // 投递状态。
+  string delivery_status = 5;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 6;
+  // 发送时间。
+  google.protobuf.Timestamp sent_at = 7;
+  // 已读时间。
+  google.protobuf.Timestamp read_at = 8;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// 获取通知请求参数。
+message GetNotificationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询通知列表请求参数。
+message ListNotificationsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 是否仅查询未读通知，可与投递状态筛选组合使用。
+  bool unread_only = 3;
+  // 渠道。
+  string channel = 4;
+}
+
+// 查询通知列表响应结果。
+message ListNotificationsReply {
+  // 数据列表。
+  repeated Notification items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 未读通知数量响应结果。
+message UnreadNotificationCountReply {
+  // 未读数量。
+  int64 unread_count = 1;
+}
+
+// 标记通知已读请求参数。
+message MarkNotificationReadRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 标记全部通知已读响应结果。
+message MarkAllNotificationsReadReply {
+  // 更新数量。
+  int64 updated_count = 1;
+}

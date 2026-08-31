@@ -1,0 +1,129 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 订阅订单服务（企业端）：查看可购套餐、自购下单、查看订单、自助充值。
+service SubscriptionOrderService {
+  // 查询可购套餐列表。
+  rpc ListPurchasablePlans(ListPurchasablePlansRequest) returns (ListPurchasablePlansReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询可购套餐列表"};
+    option (google.api.http) = {get: "/api/user/v1/subscription-orders/plans"};
+  }
+  // 企业自购下单。
+  rpc CreateSubscriptionOrder(CreateSubscriptionOrderRequest) returns (UserSubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "企业自购下单"};
+    option (google.api.http) = {
+      post: "/api/user/v1/subscription-orders"
+      body: "*"
+    };
+  }
+  // 查询我的订单列表。
+  rpc ListMyOrders(ListMyOrdersRequest) returns (ListMyOrdersReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询我的订单列表"};
+    option (google.api.http) = {get: "/api/user/v1/subscription-orders"};
+  }
+  // 获取我的订单详情。
+  rpc GetMyOrder(GetMyOrderRequest) returns (UserSubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取我的订单详情"};
+    option (google.api.http) = {get: "/api/user/v1/subscription-orders/{id}"};
+  }
+  // 企业自助充值点数。
+  rpc RechargeCredits(RechargeCreditsRequest) returns (UserSubscriptionOrder) {
+    option (gnostic.openapi.v3.operation) = {summary: "企业自助充值点数"};
+    option (google.api.http) = {
+      post: "/api/user/v1/subscription-orders:recharge"
+      body: "*"
+    };
+  }
+}
+
+// 可购套餐数据。
+message PurchasablePlan {
+  uint64 id = 1;
+  string code = 2;
+  string name = 3;
+  string description = 4;
+  // 半年价（分）。
+  int64 half_yearly_price_minor_units = 5;
+  int64 yearly_price_minor_units = 6;
+  string currency = 7;
+  string billing_cycle = 8;
+  string series_code = 9;
+  int64 granted_points = 10;
+  int32 sort_order = 11;
+  repeated PurchasablePlanLimit limits = 12;
+  repeated PurchasablePlanFeature features = 13;
+}
+
+message PurchasablePlanLimit {
+  int32 metric = 1;
+  int64 limit_value = 2;
+  int32 period = 3;
+}
+
+message PurchasablePlanFeature {
+  int32 feature = 1;
+  bool enabled = 2;
+}
+
+// 企业端订单数据。
+message UserSubscriptionOrder {
+  uint64 id = 1;
+  string order_no = 2;
+  uint64 enterprise_id = 3;
+  optional uint64 plan_id = 4;
+  string order_type = 5;
+  string cycle = 6;
+  int64 amount_minor_units = 7;
+  string currency = 8;
+  optional int64 credits_amount = 9;
+  string status = 10;
+  string source = 11;
+  string remark = 12;
+  google.protobuf.Timestamp created_at = 13;
+  google.protobuf.Timestamp updated_at = 14;
+  string plan_name = 15;
+}
+
+message ListPurchasablePlansRequest {}
+
+message ListPurchasablePlansReply {
+  repeated PurchasablePlan items = 1;
+}
+
+message CreateSubscriptionOrderRequest {
+  optional uint64 plan_id = 1;
+  string order_type = 2;
+  string cycle = 3;
+  int64 amount_minor_units = 4;
+  optional int64 credits_amount = 5;
+  string remark = 6;
+}
+
+message ListMyOrdersRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  optional string order_type = 3;
+}
+
+message ListMyOrdersReply {
+  repeated UserSubscriptionOrder items = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+message GetMyOrderRequest {
+  uint64 id = 1;
+}
+
+message RechargeCreditsRequest {
+  int64 credits_amount = 1;
+  int64 amount_minor_units = 2;
+  string remark = 3;
+}

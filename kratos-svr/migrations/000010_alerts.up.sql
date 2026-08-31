@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS ops_alerts (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  enterprise_id BIGINT UNSIGNED,
+  alert_type VARCHAR(64) NOT NULL,
+  severity VARCHAR(16) NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description TEXT,
+  resource_type VARCHAR(64),
+  resource_id VARCHAR(128),
+  details_json JSON,
+  resolved_at DATETIME(6),
+  resolved_by BIGINT UNSIGNED,
+  created_at DATETIME(6) NOT NULL,
+  updated_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  KEY idx_ops_alert_status (status, severity, created_at),
+  KEY idx_ops_alert_tenant (enterprise_id, status, created_at),
+  KEY idx_ops_alert_resource (resource_type, resource_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

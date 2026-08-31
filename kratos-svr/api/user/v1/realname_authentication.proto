@@ -1,0 +1,112 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 用户实名认证服务。
+service RealnameService {
+  // 上传实名认证图片（直接上传到OSS，不创建相册记录）。
+  rpc UploadRealnameImage(UploadRealnameImageRequest) returns (UploadRealnameImageReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "上传实名认证图片"};
+    option (google.api.http) = {
+      post: "/api/user/v1/realname-authentications/upload"
+      body: "*"
+    };
+  }
+  // 提交实名认证。
+  rpc SubmitRealnameAuthentication(SubmitRealnameAuthenticationRequest) returns (RealnameAuthentication) {
+    option (gnostic.openapi.v3.operation) = {summary: "提交实名认证"};
+    option (google.api.http) = {
+      post: "/api/user/v1/realname-authentications"
+      body: "*"
+    };
+  }
+  // 获取当前企业实名认证状态。
+  rpc GetMyRealnameAuthentication(GetMyRealnameAuthenticationRequest) returns (RealnameAuthentication) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取当前企业实名认证状态"};
+    option (google.api.http) = {get: "/api/user/v1/realname-authentications/mine"};
+  }
+}
+
+// 实名认证数据。
+message RealnameAuthentication {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 认证类型。
+  string type = 3;
+  // 状态。
+  string status = 4;
+  // 真实姓名。
+  string real_name = 5;
+  // 身份证号。
+  string id_card_number = 6;
+  // 手机号。
+  string mobile = 7;
+  // 企业名称。
+  string company_name = 8;
+  // 营业执照注册号。
+  string registration_no = 9;
+  // 营业执照图片URL。
+  string license_image_url = 10;
+  // 身份证图片URL。
+  string id_card_image_url = 11;
+  // 驳回原因。
+  string reject_reason = 12;
+  // 审核人编号。
+  uint64 reviewed_by = 13;
+  // 审核时间。
+  google.protobuf.Timestamp reviewed_at = 14;
+  // 提交时间。
+  google.protobuf.Timestamp submitted_at = 15;
+}
+
+// 提交实名认证请求参数。
+message SubmitRealnameAuthenticationRequest {
+  // 认证类型。
+  string type = 1;
+  // 真实姓名。
+  string real_name = 2;
+  // 身份证号。
+  string id_card_number = 3;
+  // 手机号。
+  string mobile = 4;
+  // 企业名称（企业认证必填）。
+  string company_name = 5;
+  // 营业执照注册号（企业认证必填）。
+  string registration_no = 6;
+  // 营业执照图片URL（企业认证必填）。
+  string license_image_url = 7;
+  // 身份证图片URL。
+  string id_card_image_url = 8;
+}
+
+// 获取当前企业实名认证状态请求参数。
+message GetMyRealnameAuthenticationRequest {
+}
+
+// 上传实名认证图片请求参数。
+message UploadRealnameImageRequest {
+  // 原始文件名。
+  string original_name = 1;
+  // MIME 类型。
+  string mime_type = 2;
+  // Base64 编码的图片内容。
+  string content = 3;
+  // 用途：license（营业执照）或 id_card（身份证）。
+  string usage = 4;
+}
+
+// 上传实名认证图片响应。
+message UploadRealnameImageReply {
+  // 图片的 OSS URL。
+  string url = 1;
+  // 对象键。
+  string object_key = 2;
+}

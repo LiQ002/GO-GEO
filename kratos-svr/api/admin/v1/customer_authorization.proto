@@ -1,0 +1,133 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 管理企业客户的平台授权记录；接口不会返回任何明文或加密凭据。
+service CustomerAuthorizationService {
+  // 获取客户授权。
+  rpc GetCustomerAuthorization(GetCustomerAuthorizationRequest) returns (CustomerAuthorization) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取客户授权"};
+    option (google.api.http) = {get: "/api/admin/v1/customer-authorizations/{id}"};
+  }
+  // 查询客户授权记录列表。
+  rpc ListCustomerAuthorizations(ListCustomerAuthorizationsRequest) returns (ListCustomerAuthorizationsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询客户授权记录列表"};
+    option (google.api.http) = {get: "/api/admin/v1/customer-authorizations"};
+  }
+  // 变更客户授权状态。
+  rpc ChangeCustomerAuthorizationStatus(ChangeCustomerAuthorizationStatusRequest) returns (CustomerAuthorization) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更客户授权状态"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/customer-authorizations/{id}/status"
+      body: "*"
+    };
+  }
+}
+
+// 客户授权数据。
+message CustomerAuthorization {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 企业编码。
+  string enterprise_code = 3;
+  // 企业名称。
+  string enterprise_name = 4;
+  // 发布渠道编号。
+  uint64 publish_channel_id = 5;
+  // 渠道编码。
+  string channel_code = 6;
+  // 渠道名称。
+  string channel_name = 7;
+  // 授权账号名称。
+  string account_name = 8;
+  // 外部平台账号编号。
+  string external_id = 9;
+  // 脱敏身份标识。
+  string masked_identity = 10;
+  // 授权状态。
+  string authorization_status = 11;
+  // 使用状态。
+  string usage_status = 12;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 13;
+  // 最近验证时间。
+  google.protobuf.Timestamp last_verified_at = 14;
+  // 最近使用时间。
+  google.protobuf.Timestamp last_used_at = 15;
+  // 每日使用上限。
+  int64 daily_limit = 16;
+  // 是否为默认项。
+  bool is_default = 17;
+  // 数据版本号。
+  uint64 version = 18;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 19;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 20;
+  // 资源类型。
+  string resource_type = 21;
+  // 资源编号。
+  uint64 resource_id = 22;
+  // 资源编码。
+  string resource_code = 23;
+  // 资源名称。
+  string resource_name = 24;
+}
+
+// 获取客户授权请求参数。
+message GetCustomerAuthorizationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询客户授权记录列表请求参数。
+message ListCustomerAuthorizationsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  uint64 enterprise_id = 3;
+  // 发布渠道编号。
+  uint64 publish_channel_id = 4;
+  // 授权状态。
+  string authorization_status = 5;
+  // 使用状态。
+  string usage_status = 6;
+  // 搜索关键词。
+  string keyword = 7;
+  // 资源类型。
+  string resource_type = 8;
+  // 资源编号。
+  uint64 resource_id = 9;
+}
+
+// 查询客户授权记录列表响应结果。
+message ListCustomerAuthorizationsReply {
+  // 数据列表。
+  repeated CustomerAuthorization items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 变更客户授权状态请求参数。
+message ChangeCustomerAuthorizationStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+  // 操作原因。
+  string reason = 4;
+}

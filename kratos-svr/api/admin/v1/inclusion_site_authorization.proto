@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "admin/v1/customer_authorization.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 管理企业客户的检测模型站点登录授权记录。
+service InclusionSiteAuthorizationService {
+  // 获取检测站点客户授权。
+  rpc GetInclusionSiteAuthorization(GetInclusionSiteAuthorizationRequest) returns (CustomerAuthorization) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取检测站点客户授权"};
+    option (google.api.http) = {get: "/api/admin/v1/inclusion-site-authorizations/{id}"};
+  }
+  // 查询检测模型站点授权记录列表。
+  rpc ListInclusionSiteAuthorizations(ListInclusionSiteAuthorizationsRequest) returns (ListInclusionSiteAuthorizationsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询检测模型站点授权记录列表"};
+    option (google.api.http) = {get: "/api/admin/v1/inclusion-site-authorizations"};
+  }
+  // 变更检测模型站点授权状态。
+  rpc ChangeInclusionSiteAuthorizationStatus(ChangeInclusionSiteAuthorizationStatusRequest) returns (CustomerAuthorization) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更检测模型站点授权状态"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/inclusion-site-authorizations/{id}/status"
+      body: "*"
+    };
+  }
+}
+
+// 获取检测站点客户授权请求参数。
+message GetInclusionSiteAuthorizationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询检测模型站点授权记录列表请求参数。
+message ListInclusionSiteAuthorizationsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  uint64 enterprise_id = 3;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 4;
+  // 授权状态。
+  string authorization_status = 5;
+  // 使用状态。
+  string usage_status = 6;
+  // 搜索关键词。
+  string keyword = 7;
+}
+
+// 查询检测模型站点授权记录列表响应结果。
+message ListInclusionSiteAuthorizationsReply {
+  // 数据列表。
+  repeated CustomerAuthorization items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 变更检测模型站点授权状态请求参数。
+message ChangeInclusionSiteAuthorizationStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+  // 操作原因。
+  string reason = 4;
+}

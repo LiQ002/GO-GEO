@@ -1,0 +1,207 @@
+syntax = "proto3";
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// 文章服务。
+service ArticleService {
+  // 创建文章。
+  rpc CreateArticle(CreateArticleRequest) returns (Article) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建文章"};
+    option (google.api.http) = {
+      post: "/api/user/v1/articles"
+      body: "*"
+    };
+  }
+  // 获取文章。
+  rpc GetArticle(GetArticleRequest) returns (Article) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取文章"};
+    option (google.api.http) = {get: "/api/user/v1/articles/{id}"};
+  }
+  // 查询文章列表。
+  rpc ListArticles(ListArticlesRequest) returns (ListArticlesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询文章列表"};
+    option (google.api.http) = {get: "/api/user/v1/articles"};
+  }
+  // 更新文章。
+  rpc UpdateArticle(UpdateArticleRequest) returns (Article) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新文章"};
+    option (google.api.http) = {
+      put: "/api/user/v1/articles/{article.id}"
+      body: "*"
+    };
+  }
+  // 删除文章。
+  rpc DeleteArticle(DeleteArticleRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除文章"};
+    option (google.api.http) = {delete: "/api/user/v1/articles/{id}"};
+  }
+  // 变更文章状态。
+  rpc ChangeArticleStatus(ChangeArticleStatusRequest) returns (Article) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更文章状态"};
+    option (google.api.http) = {
+      post: "/api/user/v1/articles/{id}:status"
+      body: "*"
+    };
+  }
+  // 创建文章快照。
+  rpc CreateArticleSnapshot(CreateArticleSnapshotRequest) returns (ArticleSnapshot) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建文章快照"};
+    option (google.api.http) = {
+      post: "/api/user/v1/articles/{id}/snapshots"
+      body: "*"
+    };
+  }
+}
+// 文章数据。
+message Article {
+  // 唯一编号。
+  uint64 id = 1;
+  // 品牌编号。
+  uint64 brand_id = 2;
+  // 文章类型编号。
+  uint64 article_type_id = 3;
+  // 标题。
+  string title = 4;
+  // 内容摘要。
+  string summary = 5;
+  // Markdown 格式正文。
+  string content_markdown = 6;
+  // HTML 格式正文。
+  string content_html = 7;
+  // 状态。
+  string status = 8;
+  // 来源。
+  string source = 9;
+  // 当前版本编号。
+  uint64 current_version_id = 10;
+  // 最新快照编号。
+  uint64 latest_snapshot_id = 11;
+  // 质量评分。
+  double quality_score = 12;
+  // 质量检查结果 JSON。
+  string quality_result_json = 13;
+  // 数据版本号。
+  uint64 version = 14;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 15;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 16;
+  // 发布时间。
+  google.protobuf.Timestamp published_at = 17;
+  // 企业图库中自动匹配的文章封面。
+  string cover_image_url = 18;
+  // 企业图库中自动匹配的正文配图。
+  repeated string image_urls = 19;
+}
+// 文章快照数据。
+message ArticleSnapshot {
+  // 唯一编号。
+  uint64 id = 1;
+  // 文章编号。
+  uint64 article_id = 2;
+  // 文章版本编号。
+  uint64 article_version_id = 3;
+  // 文章类型版本编号。
+  uint64 article_type_version_id = 4;
+  // 提示词版本编号。
+  uint64 prompt_version_id = 5;
+  // 写作模型编号。
+  uint64 writing_model_id = 6;
+  // 标题。
+  string title = 7;
+  // Markdown 格式正文。
+  string content_markdown = 8;
+  // HTML 格式正文。
+  string content_html = 9;
+  // 输入快照 JSON。
+  string input_snapshot_json = 10;
+  // 知识引用列表 JSON。
+  string knowledge_refs_json = 11;
+  // 内容哈希。
+  string content_hash = 12;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 13;
+  // 图库图片引用列表 JSON。
+  string gallery_refs_json = 14;
+}
+// 创建文章请求参数。
+message CreateArticleRequest {
+  // 文章。
+  Article article = 1;
+}
+// 获取文章请求参数。
+message GetArticleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询文章列表请求参数。
+message ListArticlesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 品牌编号。
+  uint64 brand_id = 3;
+  // 状态。
+  string status = 4;
+  // 搜索关键词。
+  string keyword = 5;
+}
+// 查询文章列表响应结果。
+message ListArticlesReply {
+  // 数据列表。
+  repeated Article items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新文章请求参数。
+message UpdateArticleRequest {
+  // 文章。
+  Article article = 1;
+  // 变更摘要。
+  string change_summary = 2;
+}
+// 删除文章请求参数。
+message DeleteArticleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+// 变更文章状态请求参数。
+message ChangeArticleStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+  // 操作原因。
+  string reason = 4;
+}
+// 创建文章快照请求参数。
+message CreateArticleSnapshotRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 文章类型版本编号。
+  uint64 article_type_version_id = 3;
+  // 提示词版本编号。
+  uint64 prompt_version_id = 4;
+  // 写作模型编号。
+  uint64 writing_model_id = 5;
+  // 输入快照 JSON。
+  string input_snapshot_json = 6;
+  // 知识引用列表 JSON。
+  string knowledge_refs_json = 7;
+  // 图库图片引用列表 JSON。
+  string gallery_refs_json = 8;
+}

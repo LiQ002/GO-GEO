@@ -1,0 +1,240 @@
+syntax = "proto3";
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// 发布任务服务。
+service PublishTaskService {
+  // 创建发布计划。
+  rpc CreatePublishPlan(CreatePublishPlanRequest) returns (PublishPlan) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建发布计划"};
+    option (google.api.http) = {
+      post: "/api/user/v1/publish-plans"
+      body: "*"
+    };
+  }
+  // 获取发布计划。
+  rpc GetPublishPlan(GetPublishPlanRequest) returns (PublishPlanDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取发布计划"};
+    option (google.api.http) = {get: "/api/user/v1/publish-plans/{id}"};
+  }
+  // 查询发布计划列表。
+  rpc ListPublishPlans(ListPublishPlansRequest) returns (ListPublishPlansReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询发布计划列表"};
+    option (google.api.http) = {get: "/api/user/v1/publish-plans"};
+  }
+  // 变更发布计划状态。
+  rpc ChangePublishPlanStatus(ChangePublishPlanStatusRequest) returns (PublishPlan) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更发布计划状态"};
+    option (google.api.http) = {
+      post: "/api/user/v1/publish-plans/{id}:status"
+      body: "*"
+    };
+  }
+  // 重试发布任务。
+  rpc RetryPublishTask(RetryPublishTaskRequest) returns (PublishTask) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试发布任务"};
+    option (google.api.http) = {
+      post: "/api/user/v1/publish-tasks/{task_id}:retry"
+      body: "*"
+    };
+  }
+  // 查询成功发布任务列表。
+  rpc ListSucceededPublishTasks(ListSucceededPublishTasksRequest) returns (ListSucceededPublishTasksReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询成功发布任务列表"};
+    option (google.api.http) = {get: "/api/user/v1/publish-tasks/succeeded"};
+  }
+}
+// 发布计划数据。
+message PublishPlan {
+  // 唯一编号。
+  uint64 id = 1;
+  // 名称。
+  string name = 2;
+  // 文章编号。
+  uint64 article_id = 3;
+  // 文章快照编号。
+  uint64 article_snapshot_id = 4;
+  // 状态。
+  int32 status = 5;
+  // 调度类型。
+  int32 schedule_type = 6;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 7;
+  // 时区。
+  string timezone = 8;
+  // 失败处理策略 JSON。
+  string failure_policy_json = 9;
+  // 客户端请求幂等编号。
+  string client_request_id = 10;
+  // 数据版本号。
+  uint64 version = 11;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 12;
+  // 文章标题。
+  string article_title = 13;
+  // 去重策略：no_dedup / all_unique / per_platform。
+  string dedup_strategy = 14;
+  // 关联文章数（多文章计划摘要）。
+  int32 article_count = 15;
+  // 关联平台数（多平台计划摘要）。
+  int32 platform_count = 16;
+  // 任务总数。
+  int32 task_count = 17;
+  // 成功任务数。
+  int32 succeeded_count = 18;
+  // 失败任务数。
+  int32 failed_count = 19;
+}
+// 发布任务数据。
+message PublishTask {
+  // 唯一编号。
+  uint64 id = 1;
+  // 发布计划编号。
+  uint64 publish_plan_id = 2;
+  // 发布渠道编号。
+  uint64 publish_channel_id = 3;
+  // 发布目标编号。
+  uint64 publish_target_id = 4;
+  // 平台账号编号。
+  uint64 platform_account_id = 5;
+  // 执行模式。
+  string execution_mode = 6;
+  // 状态。
+  string status = 7;
+  // 任务优先级。
+  int32 priority = 8;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 9;
+  // 已尝试次数。
+  uint32 attempt_count = 10;
+  // 最大尝试次数。
+  uint32 max_attempts = 11;
+  // 结果地址。
+  string result_url = 12;
+  // 平台文章编号。
+  string platform_article_id = 13;
+  // 错误分类。
+  string error_category = 14;
+  // 错误编码。
+  string error_code = 15;
+  // 错误信息。
+  string error_message = 16;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 17;
+  // 数据版本号。
+  uint64 version = 18;
+  // 最近一次执行结果 JSON。
+  string result_json = 19;
+  // 最近一次检测证据 JSON。
+  string evidence_json = 20;
+  // 文章编号（从 plan 冗余，用于去重查询）。
+  uint64 article_id = 21;
+}
+// 发布目标输入数据。
+message PublishTargetInput {
+  // 发布渠道编号。
+  uint64 publish_channel_id = 1;
+  // 发布目标编号。
+  uint64 publish_target_id = 2;
+  // 平台账号编号。
+  uint64 platform_account_id = 3;
+  // 执行模式。
+  string execution_mode = 4;
+  // 任务优先级。
+  int32 priority = 5;
+}
+// 创建发布计划请求参数。
+message CreatePublishPlanRequest {
+  // 名称。
+  string name = 1;
+  // 文章编号（已弃用：单文章接口保留向后兼容，新调用请用 article_ids）。
+  uint64 article_id = 2 [deprecated = true];
+  // 文章快照编号（已弃用：同上）。
+  uint64 article_snapshot_id = 3 [deprecated = true];
+  // 调度类型。
+  int32 schedule_type = 4;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 5;
+  // 时区。
+  string timezone = 6;
+  // 失败处理策略 JSON。
+  string failure_policy_json = 7;
+  // 客户端请求幂等编号。
+  string client_request_id = 8;
+  // 目标列表。
+  repeated PublishTargetInput targets = 9;
+  // 去重策略：no_dedup（默认，不去重）/ all_unique（全部去重，按轮询分配）/ per_platform（单平台去重）。
+  string dedup_strategy = 10;
+  // 文章编号列表（有序；与 article_snapshot_ids 一一对应）。
+  repeated uint64 article_ids = 11;
+  // 文章快照编号列表（与 article_ids 一一对应）。
+  repeated uint64 article_snapshot_ids = 12;
+}
+// 获取发布计划请求参数。
+message GetPublishPlanRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 发布计划详情数据。
+message PublishPlanDetail {
+  // 套餐。
+  PublishPlan plan = 1;
+  // 任务列表。
+  repeated PublishTask tasks = 2;
+}
+// 查询发布计划列表请求参数。
+message ListPublishPlansRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 文章编号。
+  uint64 article_id = 4;
+}
+// 查询发布计划列表响应结果。
+message ListPublishPlansReply {
+  // 数据列表。
+  repeated PublishPlan items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 变更发布计划状态请求参数。
+message ChangePublishPlanStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+}
+// 重试发布任务请求参数。
+message RetryPublishTaskRequest {
+  // 任务编号。
+  uint64 task_id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+// 查询成功发布任务列表请求参数。
+message ListSucceededPublishTasksRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+}
+// 查询成功发布任务列表响应结果。
+message ListSucceededPublishTasksReply {
+  // 数据列表。
+  repeated PublishTask items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}

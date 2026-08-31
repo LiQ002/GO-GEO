@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GEO 流程图</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.0/mermaid.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #f5f6f8; color: #1a1a1a; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 32px 20px 60px; }
+  h1 { font-size: 24px; font-weight: 600; }
+  .sub { font-size: 13px; color: #888; margin: 6px 0 32px; }
+  .card { background: #fff; border-radius: 14px; padding: 28px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,.06); }
+  h2 { font-size: 15px; font-weight: 600; margin-bottom: 20px; padding-left: 10px; border-left: 3px solid #3478f6; }
+  .mermaid { display: flex; justify-content: center; overflow-x: auto; }
+  hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+  .caption { font-size: 12px; color: #999; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>GEO 平台流程图</h1>
+<p class="sub">账号入驻 → 内容生产 → 投放分发 → 数据监测</p>
+
+<div class="card">
+  <h2>1. 全局概览</h2>
+  <pre class="mermaid">
+flowchart LR
+    A[管理员开号] --> B[企业实名认证]
+    B --> C[开通套餐]
+    C --> D[构建品牌知识库]
+    D --> E[AI 创作文章]
+    E --> F[审核通过]
+    F --> G[多平台投放]
+    G --> H[客户端执行分发]
+    H --> I[数据回传监测]
+    style A fill:#e4efff,stroke:#378add
+    style C fill:#e4f7f1,stroke:#1d9e75
+    style F fill:#fff0e4,stroke:#d85a30
+    style I fill:#eeedfe,stroke:#7f77dd
+  </pre>
+</div>
+
+<hr>
+
+<div class="card">
+  <h2>2. 账号开通与实名认证</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[管理员创建企业账号] --> B[企业首次登录]
+    B --> C{已实名?}
+    C -->|否| D[弹出认证表单]
+    D --> E[提交执照/法人等信息]
+    E --> F[管理员后台审核]
+    F -->|驳回| E
+    F -->|通过| G[解锁全部功能]
+    C -->|是| G
+    style A fill:#e4efff,stroke:#378add
+    style G fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+  <p class="caption">开发阶段通过 feature.real_name_bypass 开关可跳过认证</p>
+</div>
+
+<div class="card">
+  <h2>3. 套餐生命周期：购买 → 使用 → 到期/耗尽</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[管理员配置套餐/价格] --> B[企业工作台查看套餐]
+    B --> C{购买方式}
+    C -->|企业自购| D[提交订单]
+    D --> E[运营确认到账]
+    C -->|管理员开通| E
+    E --> F[激活 Subscription<br/>状态=active]
+    F --> G[企业正常使用]
+    G --> H{检查状态}
+    H -->|有效期到期| I[状态=expired<br/>提示：服务有效期已过<br/>请重新开通业务]
+    H -->|积分/额度耗尽| J[拒绝计费<br/>提示：积分已用完<br/>请购买积分或升级套餐]
+    I --> K[续费重新开通]
+    J --> L[购买积分或续费]
+    K --> F
+    L --> F
+    style A fill:#e4efff,stroke:#378add
+    style F fill:#e4f7f1,stroke:#1d9e75
+    style I fill:#fcebeb,stroke:#e24b4a
+    style J fill:#fcebeb,stroke:#e24b4a
+  </pre>
+  <p class="caption">每次业务操作前先校验套餐状态和余额；到期/耗尽时全局拦截并显示续费入口</p>
+</div>
+
+<div class="card">
+  <h2>4. 点数扣费流程</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[触发业务动作] --> B{套餐是否有效?}
+    B -->|已过期| X[提示：服务有效期已过<br/>请重新开通]
+    B -->|有效| C{积分/额度充足?}
+    C -->|不足| Y[提示：积分已用完<br/>请购买积分或升级套餐]
+    C -->|充足| D[冻结对应点数]
+    D --> E[执行业务]
+    E -->|成功| F[扣减余额 + 写流水]
+    E -->|失败| G[解冻归还]
+    style X fill:#fcebeb,stroke:#e24b4a
+    style Y fill:#fcebeb,stroke:#e24b4a
+    style F fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+</div>
+
+<div class="card">
+  <h2>5. 内容生产：从知识到文章</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[品牌中心<br/>设置品牌词与画像] --> B[知识库<br/>上传产品文档]
+    A --> C[图库<br/>上传品牌素材]
+    B --> D[关键词蒸馏<br/>AI 生成目标问题]
+    C --> D
+    D --> E[文章创作<br/>选择类型/模型/素材]
+    E --> F[生成文章草稿]
+    F --> G[审核]
+    G -->|通过| H[进入投放池]
+    G -->|驳回| E
+    style A fill:#e4f3ff,stroke:#85b7eb
+    style E fill:#fff8e4,stroke:#ef9f27
+    style H fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+  <p class="caption">创作类型由管理员后台提前配置，包含写作模型、发布渠道、输入字段等</p>
+</div>
+
+<div class="card">
+  <h2>6. 投放任务：多文章 × 多平台 + 去重</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[选择已审核文章<br/>可多选并排序] --> B[选择目标平台/账号<br/>可多选并排序]
+    B --> C[选择去重策略]
+    C --> D{去重检查}
+    D -->|不去重| E[全部生成]
+    D -->|全部去重| F[同文章只出现一次<br/>轮询分配平台]
+    D -->|单平台去重| G[同文章可发多平台<br/>但同平台不重复]
+    E --> H[生成 pub_tasks]
+    F --> H
+    G --> H
+    H --> I[客户端拉取执行]
+    style H fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+</div>
+
+<div class="card">
+  <h2>7. GEO 查收录：频率配置与周期调度</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[企业选择执行频率]:::start --> B{频率类型}
+    B -->|once| C[单次执行<br/>指定时间]
+    B -->|manual| D[手动触发<br/>客户端按钮]
+    B -->|daily/weekly| E[周期执行<br/>选择时间和间隔]:::core
+    B -->|cron| F[自定义 Cron]
+    C --> G[计算费用预估<br/>问题 × 站点 × 单价]
+    D --> G
+    E --> G
+    F --> G
+    G --> H[创建监测计划<br/>写入 next_run_at]
+    H --> I[后端 Cron 调度器<br/>每分钟扫描]
+    I --> J{next_run_at <= NOW<br/>AND status=active}
+    J -->|否| I
+    J -->|是| K{额度/点数充足?}
+    K -->|不足| L[自动暂停<br/>通知企业]:::warn
+    K -->|充足| M[预留点数<br/>生成 geo_tasks]
+    M --> N[更新 next_run_at<br/>+ 24h / + 7d]
+    N --> I
+    style A fill:#e4efff,stroke:#378add
+    style H fill:#e4f7f1,stroke:#1d9e75
+    style L fill:#fcebeb,stroke:#e24b4a
+  </pre>
+  <p class="caption">周期计划自动调度，额度不足自动暂停；计划状态 active→paused↔stopped</p>
+</div>
+
+<div class="card">
+  <h2>8. GEO 查收录：客户端执行（提问 + 采集）</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[企业创建监测计划]:::start --> B[选择品牌 + 问题列表 + 收录站点]
+    B --> C[系统生成 geo_tasks<br/>问题 × 站点 矩阵]
+    C --> D[客户端拉取任务]
+    D --> E{平台已授权?}
+    E -->|否| F[弹出授权页<br/>用户登录 AI 平台]:::warn
+    F --> E
+    E -->|是| G[打开平台<br/>输入问题]:::core
+    G --> H[采集 AI 回答]
+    H --> I[截图存证]
+    I --> J[提交 AnswerSnapshot<br/>原文 + 截图 + 引用]:::done
+    style A fill:#e4efff,stroke:#378add
+    style F fill:#fff0e4,stroke:#d85a30
+    style J fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+  <p class="caption">客户端驱动与发文驱动共用调度体系，每次回答都产出不可变快照</p>
+</div>
+
+<div class="card">
+  <h2>9. GEO 查收录：服务端分析（提取引用 + 评分）</h2>
+  <pre class="mermaid">
+flowchart TD
+    A[AnswerSnapshot 写入]:::core --> B[AI 分析引擎触发]
+    B --> C[解析引用来源 Citations]
+    B --> D[识别品牌/竞品提及 Mentions]
+    C --> E{是否企业自有?}
+    E -->|是| F[enterprise_source=true]
+    E -->|否| G[enterprise_source=false]
+    D --> H{实体类型}
+    H -->|品牌/产品| I[brand mention]
+    H -->|竞品| J[competitor mention]
+    F --> K[计算引用率]
+    I --> L[计算品牌提及率]
+    J --> M[竞品对比]
+    K --> N[汇总 AnalysisResult]
+    L --> N
+    M --> N
+    N --> O[写入 visibility_score<br/>0-1]
+    O --> P[趋势/对比/站点报表]
+    P --> Q[企业仪表盘]
+    P --> R[管理端 GEO 概览]
+    style A fill:#eeedfe,stroke:#7f77dd
+    style Q fill:#e4f7f1,stroke:#1d9e75
+    style R fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+  <p class="caption">AnalysisResult 是可版本迭代的分析结论，原始 AnswerSnapshot 永不修改</p>
+</div>
+
+<div class="card">
+  <h2>10. 客户端执行与运营全览</h2>
+  <pre class="mermaid">
+flowchart LR
+    A[企业下载<br/>GEO 助手客户端] --> B{执行任务类型}
+    B -->|发文| C[自媒体平台授权登录]
+    B -->|查收录| D[AI 平台授权登录]
+    C --> E[自动化发文]
+    D --> F[自动化查收录]
+    E --> G[回传结果<br/>链接/截图]
+    F --> G
+    G --> H[运营后台<br/>全览仪表盘]
+    H --> I[文章审核]
+    H --> J[平台授权管理]
+    H --> K[实名审核]
+    style A fill:#eeedfe,stroke:#7f77dd
+    style H fill:#e4f7f1,stroke:#1d9e75
+  </pre>
+</div>
+
+</div>
+<script>mermaid.initialize({startOnLoad:true,theme:'default',flowchart:{useMaxWidth:true,htmlLabels:true,curve:'basis'}});</script>
+</body>
+</html>

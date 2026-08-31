@@ -1,0 +1,271 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 销售机会服务。
+service SalesOpportunityService {
+  // 创建销售机会。
+  rpc CreateSalesOpportunity(CreateSalesOpportunityRequest) returns (SalesOpportunity) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建销售机会"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/sales-opportunities"
+      body: "*"
+    };
+  }
+  // 获取销售机会。
+  rpc GetSalesOpportunity(GetSalesOpportunityRequest) returns (SalesOpportunity) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取销售机会"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-opportunities/{id}"};
+  }
+  // 查询销售机会列表。
+  rpc ListSalesOpportunities(ListSalesOpportunitiesRequest) returns (ListSalesOpportunitiesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询销售机会列表"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-opportunities"};
+  }
+  // 更新销售机会和客户资料。
+  rpc UpdateSalesOpportunity(UpdateSalesOpportunityRequest) returns (SalesOpportunity) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新销售机会和客户资料"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/sales-opportunities/{opportunity.id}"
+      body: "*"
+    };
+  }
+  // 变更销售机会状态。
+  rpc ChangeSalesOpportunityStatus(ChangeSalesOpportunityStatusRequest) returns (SalesOpportunity) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更销售机会状态"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/sales-opportunities/{id}/status"
+      body: "*"
+    };
+  }
+  // 检查销售机会中的客户是否重复。
+  rpc CheckSalesOpportunityDuplicate(CheckSalesOpportunityDuplicateRequest) returns (CheckSalesOpportunityDuplicateReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "检查销售机会客户重复"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-opportunities:check-duplicate"};
+  }
+  // 查询可分配的销售负责人。
+  rpc ListSalesOpportunityOwners(ListSalesOpportunityOwnersRequest) returns (ListSalesOpportunityOwnersReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询销售机会负责人"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-opportunity-owners"};
+  }
+}
+
+// 销售机会状态。
+enum SalesOpportunityStatus {
+  // 未指定。
+  SALES_OPPORTUNITY_STATUS_UNSPECIFIED = 0;
+  // 跟进中。
+  SALES_OPPORTUNITY_STATUS_FOLLOWING = 1;
+  // 已暂停。
+  SALES_OPPORTUNITY_STATUS_PAUSED = 2;
+  // 已关闭。
+  SALES_OPPORTUNITY_STATUS_CLOSED = 3;
+}
+
+// 销售机会品牌别名。
+message SalesOpportunityBrandAlias {
+  // 唯一编号。
+  uint64 id = 1;
+  // 品牌别名。
+  string alias = 2;
+  // 排序值。
+  int32 sort_order = 3;
+}
+
+// 销售机会产品或服务。
+message SalesOpportunityProduct {
+  // 唯一编号。
+  uint64 id = 1;
+  // 产品或服务名称。
+  string name = 2;
+  // 产品或服务说明。
+  string description = 3;
+  // 主要卖点。
+  string selling_points = 4;
+  // 目标客户。
+  string target_audience = 5;
+  // 排序值。
+  int32 sort_order = 6;
+}
+
+// 销售机会竞品。
+message SalesOpportunityCompetitor {
+  // 唯一编号。
+  uint64 id = 1;
+  // 竞品名称。
+  string name = 2;
+  // 竞品官网。
+  string website = 3;
+  // 竞品说明。
+  string description = 4;
+  // 排序值。
+  int32 sort_order = 5;
+}
+
+// 销售机会及客户诊断资料。
+message SalesOpportunity {
+  // 唯一编号。
+  uint64 id = 1;
+  // 机会编号。
+  string code = 2;
+  // 机会名称。
+  string name = 3;
+  // 负责人平台账号编号。
+  uint64 owner_admin_id = 4;
+  // 负责人姓名。
+  string owner_display_name = 5;
+  // 客户企业名称。
+  string customer_name = 6;
+  // 客户官网。
+  string website = 7;
+  // 所属行业。
+  string industry = 8;
+  // 所属地区。
+  string region = 9;
+  // 主要联系人。
+  string contact_name = 10;
+  // 联系电话。
+  string contact_phone = 11;
+  // 联系邮箱。
+  string contact_email = 12;
+  // 品牌名称。
+  string brand_name = 13;
+  // 目标客户说明。
+  string target_audience = 14;
+  // 品牌核心价值。
+  string core_value = 15;
+  // 当前内容渠道和建设情况。
+  string current_content = 16;
+  // 当前痛点。
+  string pain_points = 17;
+  // 预期目标。
+  string expected_goals = 18;
+  // 预算下限，使用最小货币单位。
+  int64 budget_min_minor_units = 19;
+  // 预算上限，使用最小货币单位；零表示未填写。
+  int64 budget_max_minor_units = 20;
+  // 货币代码。
+  string currency = 21;
+  // 状态。
+  SalesOpportunityStatus status = 22;
+  // 备注。
+  string remark = 23;
+  // 品牌别名。
+  repeated SalesOpportunityBrandAlias brand_aliases = 24;
+  // 产品或服务。
+  repeated SalesOpportunityProduct products = 25;
+  // 竞品。
+  repeated SalesOpportunityCompetitor competitors = 26;
+  // 数据版本号。
+  uint64 version = 27;
+  // 关闭时间。
+  google.protobuf.Timestamp closed_at = 28;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 29;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 30;
+}
+
+// 创建销售机会请求参数。
+message CreateSalesOpportunityRequest {
+  // 销售机会和客户资料。
+  SalesOpportunity opportunity = 1;
+}
+
+// 获取销售机会请求参数。
+message GetSalesOpportunityRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询销售机会列表请求参数。
+message ListSalesOpportunitiesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 搜索机会、客户、品牌、官网或联系人。
+  string keyword = 3;
+  // 状态；零表示全部。
+  SalesOpportunityStatus status = 4;
+  // 负责人编号；未传表示按当前数据范围查询。
+  optional uint64 owner_admin_id = 5;
+}
+
+// 查询销售机会列表响应结果。
+message ListSalesOpportunitiesReply {
+  // 数据列表。
+  repeated SalesOpportunity items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 更新销售机会请求参数。
+message UpdateSalesOpportunityRequest {
+  // 销售机会和客户资料。
+  SalesOpportunity opportunity = 1;
+}
+
+// 变更销售机会状态请求参数。
+message ChangeSalesOpportunityStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 目标状态。
+  SalesOpportunityStatus status = 3;
+  // 操作原因。
+  string reason = 4;
+}
+
+// 检查销售机会中的客户是否重复请求参数。
+message CheckSalesOpportunityDuplicateRequest {
+  // 客户企业名称。
+  string customer_name = 1;
+  // 客户官网。
+  string website = 2;
+  // 编辑时排除的销售机会编号。
+  optional uint64 exclude_id = 3;
+}
+
+// 检查销售机会中的客户是否重复响应结果。
+message CheckSalesOpportunityDuplicateReply {
+  // 是否存在疑似重复客户。
+  bool duplicated = 1;
+  // 疑似重复的销售机会。
+  repeated SalesOpportunity matches = 2;
+}
+
+// 查询可分配的销售负责人请求参数。
+message ListSalesOpportunityOwnersRequest {
+  // 搜索姓名、用户名或邮箱。
+  string keyword = 1;
+}
+
+// 销售机会负责人。
+message SalesOpportunityOwner {
+  // 平台账号编号。
+  uint64 id = 1;
+  // 登录用户名。
+  string username = 2;
+  // 显示名称。
+  string display_name = 3;
+  // 邮箱。
+  string email = 4;
+}
+
+// 查询可分配的销售负责人响应结果。
+message ListSalesOpportunityOwnersReply {
+  // 负责人列表。
+  repeated SalesOpportunityOwner items = 1;
+  // 当前人员是否可以把机会分配给其他人员。
+  bool can_assign_others = 2;
+}

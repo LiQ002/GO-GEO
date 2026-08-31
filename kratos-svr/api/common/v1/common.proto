@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package common.v1;
+
+option go_package = "kratos-svr/api/common/v1;v1";
+
+// 操作结果数据。
+message OperationResult {
+  // 操作是否成功。
+  bool success = 1;
+  // 提示消息。
+  string message = 2;
+  // 请求编号。
+  string request_id = 3;
+}
+
+// 分页信息数据。
+message PageInfo {
+  // 下一页分页令牌。
+  string next_page_token = 1;
+  // 总记录数。
+  int64 total_size = 2;
+}

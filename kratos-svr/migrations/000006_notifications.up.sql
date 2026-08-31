@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS ops_notifications (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  enterprise_id BIGINT UNSIGNED,
+  recipient_type VARCHAR(32) NOT NULL,
+  recipient_id BIGINT UNSIGNED NOT NULL,
+  channel VARCHAR(32) NOT NULL,
+  template_code VARCHAR(64) NOT NULL,
+  payload_json JSON NOT NULL,
+  status VARCHAR(32) NOT NULL,
+  scheduled_at DATETIME(6) NOT NULL,
+  sent_at DATETIME(6),
+  read_at DATETIME(6),
+  error_message TEXT,
+  created_at DATETIME(6) NOT NULL,
+  updated_at DATETIME(6) NOT NULL,
+  PRIMARY KEY (id),
+  KEY idx_ops_notification_inbox (enterprise_id, recipient_type, recipient_id, read_at, created_at),
+  KEY idx_ops_notification_delivery (status, scheduled_at),
+  KEY idx_ops_notification_read_at (read_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

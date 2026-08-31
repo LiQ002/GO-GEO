@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// GEO 报告服务。
+service GeoReportService {
+  // 获取 GEO 报告汇总。
+  rpc GetGeoReportSummary(GetGeoReportSummaryRequest) returns (GeoReportSummary) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取 GEO 报告汇总"};
+    option (google.api.http) = {get: "/api/user/v1/geo-reports/summary"};
+  }
+  // 查询 GEO 报告趋势。
+  rpc ListGeoReportTrend(ListGeoReportTrendRequest) returns (ListGeoReportTrendReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询 GEO 报告趋势"};
+    option (google.api.http) = {get: "/api/user/v1/geo-reports/trend"};
+  }
+  // 查询 GEO 站点表现。
+  rpc ListGeoSitePerformance(ListGeoSitePerformanceRequest) returns (ListGeoSitePerformanceReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询 GEO 站点表现"};
+    option (google.api.http) = {get: "/api/user/v1/geo-reports/sites"};
+  }
+}
+
+// GEO 报告筛选条件数据。
+message GeoReportFilter {
+  // 品牌编号。
+  uint64 brand_id = 1;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 2;
+  // 开始日期。
+  google.protobuf.Timestamp from = 3;
+  // 结束日期，为不包含该日期的上界。
+  google.protobuf.Timestamp to = 4;
+}
+
+// GEO 报告指标数据。
+message GeoReportMetrics {
+  // 回答总数。
+  int64 total_answers = 1;
+  // 有效回答数量。
+  int64 valid_answers = 2;
+  // 品牌提及率。
+  double brand_mention_rate = 3;
+  // 引用率。
+  double citation_rate = 4;
+  // 问题覆盖率。
+  double question_coverage_rate = 5;
+  // 平均可见性评分。
+  double average_visibility_score = 6;
+}
+
+// 获取 GEO 报告汇总请求参数。
+message GetGeoReportSummaryRequest {
+  // 筛选条件。
+  GeoReportFilter filter = 1;
+}
+
+// GEO 报告汇总数据。
+message GeoReportSummary {
+  // 筛选条件。
+  GeoReportFilter filter = 1;
+  // 指标集合。
+  GeoReportMetrics metrics = 2;
+  // 生成时间。
+  google.protobuf.Timestamp generated_at = 3;
+}
+
+// 查询 GEO 报告趋势请求参数。
+message ListGeoReportTrendRequest {
+  // 筛选条件。
+  GeoReportFilter filter = 1;
+}
+
+// GEO 报告趋势点数据。
+message GeoReportTrendPoint {
+  // UTC 日历日期，格式为 YYYY-MM-DD。
+  string date = 1;
+  // 指标集合。
+  GeoReportMetrics metrics = 2;
+}
+
+// 查询 GEO 报告趋势响应结果。
+message ListGeoReportTrendReply {
+  // 筛选条件。
+  GeoReportFilter filter = 1;
+  // 数据列表。
+  repeated GeoReportTrendPoint items = 2;
+  // 生成时间。
+  google.protobuf.Timestamp generated_at = 3;
+}
+
+// 查询 GEO 站点表现请求参数。
+message ListGeoSitePerformanceRequest {
+  // 筛选条件。
+  GeoReportFilter filter = 1;
+}
+
+// GEO 站点表现数据。
+message GeoSitePerformance {
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 1;
+  // 检测模型站点名称。
+  string inclusion_site_name = 2;
+  // 指标集合。
+  GeoReportMetrics metrics = 3;
+}
+
+// 查询 GEO 站点表现响应结果。
+message ListGeoSitePerformanceReply {
+  // 筛选条件。
+  GeoReportFilter filter = 1;
+  // 数据列表。
+  repeated GeoSitePerformance items = 2;
+  // 生成时间。
+  google.protobuf.Timestamp generated_at = 3;
+}

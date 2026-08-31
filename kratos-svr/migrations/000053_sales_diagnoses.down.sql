@@ -1,0 +1,12 @@
+DROP TABLE IF EXISTS sls_diagnosis_metrics;
+DROP TABLE IF EXISTS sls_diagnosis_competitor_mentions;
+DROP TABLE IF EXISTS sls_diagnosis_citations;
+DROP TABLE IF EXISTS sls_diagnosis_results;
+DROP TABLE IF EXISTS sls_diagnosis_tasks;
+DROP TABLE IF EXISTS sls_diagnosis_models;
+DROP TABLE IF EXISTS sls_diagnosis_questions;
+DROP TABLE IF EXISTS sls_diagnosis_profile_competitors;
+DROP TABLE IF EXISTS sls_diagnosis_profile_products;
+DROP TABLE IF EXISTS sls_diagnosis_profile_aliases;
+DROP TABLE IF EXISTS sls_diagnosis_profiles;
+DROP TABLE IF EXISTS sls_diagnoses;

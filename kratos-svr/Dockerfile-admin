@@ -1,0 +1,19 @@
+FROM registry.gbicom.com:8443/golang/golang:1.26.5-bookworm AS builder
+
+COPY . /src
+WORKDIR /src
+
+RUN go env -w GO111MODULE=on && go env -w GOPROXY=https://goproxy.cn,direct && make init && make all && CGO_ENABLED=0 make build
+
+FROM scratch
+
+WORKDIR /app
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /src/bin/admin admin
+COPY --from=builder /src/app/admin/configs/config.yaml config.yaml
+
+
+EXPOSE 8000
+EXPOSE 9000
+
+CMD ["./admin", "-conf", "config.yaml"]

@@ -1,0 +1,81 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "kratos-svr/app/user/internal/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Auth auth = 3;
+  Storage storage = 4;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+    repeated string cors_allowed_origins = 4;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+  GRPC grpc = 2;
+}
+
+message Data {
+  message Database {
+    string driver = 1;
+    string source = 2;
+    int32 max_open_connections = 3;
+    int32 max_idle_connections = 4;
+    google.protobuf.Duration connection_max_lifetime = 5;
+    google.protobuf.Duration connection_max_idle_time = 6;
+    google.protobuf.Duration slow_query_threshold = 7;
+  }
+  message Redis {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration read_timeout = 3;
+    google.protobuf.Duration write_timeout = 4;
+  }
+  Database database = 1;
+  Redis redis = 2;
+  string credential_encryption_key = 3;
+}
+
+message Auth {
+  string issuer = 1;
+  string audience = 2;
+  string secret = 3;
+  google.protobuf.Duration access_token_ttl = 4;
+  google.protobuf.Duration refresh_token_ttl = 5;
+  string cookie_name = 6;
+}
+
+// Storage configures user-uploaded file persistence independently from the
+// database and HTTP server.
+message Storage {
+  message Local {
+    string root = 1;
+    string public_base_url = 2;
+  }
+  message AliyunOSS {
+    string region = 1;
+    string endpoint = 2;
+    string bucket = 3;
+    string access_key_id = 4;
+    string access_key_secret = 5;
+    string security_token = 6;
+    string public_base_url = 7;
+    string path_prefix = 8;
+  }
+  string driver = 1;
+  Local local = 2;
+  AliyunOSS aliyun_oss = 3;
+}

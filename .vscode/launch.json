@@ -1,0 +1,131 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Main Process (Client)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/geoclient",
+      "runtimeExecutable": "${workspaceFolder}/geoclient/node_modules/.bin/electron",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/geoclient/node_modules/.bin/electron.cmd"
+      },
+      "runtimeArgs": [
+        ".",
+        "--inspect=5858",
+        "--remote-debugging-port=9222"
+      ],
+      "preLaunchTask": "geoclient: prepare client debug",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": [
+        "${workspaceFolder}/geoclient/main/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/geoclient/**",
+        "!**/node_modules/**"
+      ],
+      "env": {
+        "NEXT_PUBLIC_APP_MODE": "client"
+      }
+    },
+    {
+      "name": "Debug Main Process (Operator)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/geoclient",
+      "runtimeExecutable": "${workspaceFolder}/geoclient/node_modules/.bin/electron",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/geoclient/node_modules/.bin/electron.cmd"
+      },
+      "runtimeArgs": [
+        ".",
+        "--inspect=5858",
+        "--remote-debugging-port=9222"
+      ],
+      "preLaunchTask": "geoclient: prepare operator debug",
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": [
+        "${workspaceFolder}/geoclient/main/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/geoclient/**",
+        "!**/node_modules/**"
+      ],
+      "env": {
+        "NEXT_PUBLIC_APP_MODE": "operator"
+      }
+    },
+    {
+      "name": "Debug Renderer Process",
+      "port": 9222,
+      "request": "attach",
+      "type": "chrome",
+      "webRoot": "${workspaceFolder}/geoclient",
+      "sourceMapPathOverrides": {
+        "webpack://_N_E/*": "${webRoot}/*",
+        "webpack:///*": "${webRoot}/*"
+      },
+      "timeout": 60000,
+      "presentation": {
+        "hidden": true
+      }
+    },
+    {
+      "name": "Attach Main Process (port 5858)",
+      "type": "node",
+      "request": "attach",
+      "port": 5858,
+      "sourceMaps": true,
+      "skipFiles": ["<node_internals>/**"],
+      "outFiles": [
+        "${workspaceFolder}/geoclient/main/**/*.js"
+      ],
+      "resolveSourceMapLocations": [
+        "${workspaceFolder}/geoclient/**",
+        "!**/node_modules/**"
+      ]
+    },
+    {
+      "name": "Debug puppeteer-test.local.js",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/puppeteer-test.local.js",
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal",
+      "skipFiles": ["<node_internals>/**"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Debug All (Client)",
+      "configurations": [
+        "Debug Main Process (Client)",
+        "Debug Renderer Process"
+      ],
+      "presentation": {
+        "order": 1
+      },
+      "stopAll": true
+    },
+    {
+      "name": "Debug All (Operator)",
+      "configurations": [
+        "Debug Main Process (Operator)",
+        "Debug Renderer Process"
+      ],
+      "presentation": {
+        "order": 2
+      },
+      "stopAll": true
+    },
+    {
+      "name": "Attach to dev:client:debug",
+      "configurations": ["Attach Main Process (port 5858)"],
+      "presentation": {
+        "order": 3
+      }
+    }
+  ]
+}

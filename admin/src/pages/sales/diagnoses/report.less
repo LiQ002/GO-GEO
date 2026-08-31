@@ -1,0 +1,393 @@
+.sales-diagnosis-report-document,
+.sales-diagnosis-report-document #root {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow: visible !important;
+}
+
+#root:has(.sales-diagnosis-report-page),
+#root:has(.sales-diagnosis-report-page) > div {
+  height: auto !important;
+  min-height: 100vh !important;
+  overflow: visible !important;
+}
+
+.sales-diagnosis-report-page {
+  height: auto;
+  min-height: 100vh;
+  padding: 24px;
+  overflow: visible;
+  background: #f3f5f8;
+}
+
+.sales-diagnosis-report {
+  margin-bottom: 16px;
+}
+
+.sales-diagnosis-report-cover {
+  padding: 28px;
+  margin-bottom: 32px;
+  text-align: center;
+  background: linear-gradient(135deg, #f0f5ff 0%, #f9f0ff 100%);
+  border: 1px solid #d6e4ff;
+  border-radius: 12px;
+}
+
+.sales-diagnosis-report-cover .ant-descriptions {
+  max-width: 920px;
+  margin: 24px auto 0;
+  text-align: left;
+  background: rgb(255 255 255 / 78%);
+}
+
+.sales-diagnosis-report-summary,
+.sales-diagnosis-report-section {
+  width: 100%;
+}
+
+.sales-diagnosis-report-section-title {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e6f4ff;
+}
+
+.sales-diagnosis-report-section-title > span {
+  display: inline-flex;
+  width: 34px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  background: #1677ff;
+  border-radius: 50%;
+}
+
+.sales-diagnosis-core-findings {
+  padding: 16px 20px;
+  margin-top: 16px;
+  background: #fafafa;
+  border-left: 4px solid #1677ff;
+}
+
+.sales-diagnosis-core-findings li + li {
+  margin-top: 8px;
+}
+
+.sales-diagnosis-report-kpis,
+.sales-diagnosis-report-table,
+.sales-diagnosis-platform-analysis,
+.sales-diagnosis-report-section > .ant-row,
+.sales-diagnosis-report-section > .ant-collapse,
+.sales-diagnosis-report-section > .ant-card {
+  margin-bottom: 16px;
+}
+
+.sales-diagnosis-optimization-card {
+  height: 100%;
+  border-top: 3px solid #1677ff;
+}
+
+.sales-diagnosis-optimization-print-list {
+  display: none;
+}
+
+.sales-diagnosis-report-bridge {
+  padding: 14px 18px;
+  margin: 16px 0 0;
+  color: #595959;
+  background: #f6ffed;
+  border-left: 4px solid #52c41a;
+}
+
+.sales-diagnosis-report-page > .sales-diagnosis-report {
+  width: min(1280px, 100%);
+  margin: 0 auto;
+}
+
+.sales-diagnosis-report-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (max-width: 767px) {
+  .sales-diagnosis-report-page {
+    padding: 12px;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  html,
+  body,
+  #root {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  #root:has(.sales-diagnosis-report-page) > div {
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+
+  body {
+    color: #1f1f1f;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .sales-diagnosis-report-page {
+    min-height: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+
+  .sales-diagnosis-report-page > .sales-diagnosis-report,
+  .sales-diagnosis-report {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    border: 0 !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  // The root card header is screen-only chrome. Printing it separately can
+  // force the actual report cover onto page two and leave a nearly blank page.
+  .sales-diagnosis-report > .ant-card-head,
+  .sales-diagnosis-report-meta {
+    display: none !important;
+  }
+
+  .sales-diagnosis-report-action {
+    display: none !important;
+  }
+
+  .sales-diagnosis-report .ant-card-head {
+    min-height: auto !important;
+    padding: 0 0 12px !important;
+    border-bottom: 1px solid #d9d9d9 !important;
+  }
+
+  .sales-diagnosis-report > .ant-card-body {
+    padding: 0 !important;
+  }
+
+  // Ant Space is also a flex container. Returning the report body to normal
+  // block flow lets page-break rules on sections and recommendation items work.
+  .sales-diagnosis-report-content,
+  .sales-diagnosis-report-content > .ant-space-item {
+    display: block !important;
+  }
+
+  .sales-diagnosis-report-content > .ant-space-item + .ant-space-item {
+    margin-top: 32px !important;
+  }
+
+  .sales-diagnosis-report .ant-card,
+  .sales-diagnosis-report .ant-alert,
+  .sales-diagnosis-report-chart {
+    break-inside: avoid;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  .sales-diagnosis-report-cover {
+    padding: 12px 0 20px !important;
+    margin-bottom: 20px !important;
+    break-before: auto !important;
+    background: #fff !important;
+    border: 0 !important;
+    border-bottom: 2px solid #1677ff !important;
+    border-radius: 0 !important;
+  }
+
+  .sales-diagnosis-report-section {
+    break-before: page;
+  }
+
+  .sales-diagnosis-report-section-title > span {
+    color: #1677ff !important;
+    background: transparent !important;
+    border: 1px solid #1677ff;
+  }
+
+  .sales-diagnosis-report .ant-collapse-content,
+  .sales-diagnosis-report .ant-collapse-content-hidden {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .sales-diagnosis-report .ant-collapse-expand-icon {
+    display: none !important;
+  }
+
+  .sales-diagnosis-report .ant-table-container,
+  .sales-diagnosis-report .ant-table-content,
+  .sales-diagnosis-report .ant-table-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  .sales-diagnosis-report .ant-table-wrapper,
+  .sales-diagnosis-report .ant-spin-nested-loading,
+  .sales-diagnosis-report .ant-spin-container,
+  .sales-diagnosis-report .ant-table {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .sales-diagnosis-report table {
+    width: 100% !important;
+    max-width: 100% !important;
+    table-layout: fixed !important;
+  }
+
+  // Long model evidence must wrap inside the printable A4 width. Ant Table's
+  // ellipsis class otherwise applies nowrap and pushes the final column beyond
+  // the right page edge.
+  .sales-diagnosis-report .ant-table-cell,
+  .sales-diagnosis-report .ant-table-cell-ellipsis,
+  .sales-diagnosis-report .ant-table-cell-content,
+  .sales-diagnosis-report .ant-table-column-title,
+  .sales-diagnosis-report .sales-diagnosis-table-long-text {
+    min-width: 0 !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+  }
+
+  // The desktop view presents the competitor table and chart side by side.
+  // Stack them for print so the table can use the complete page width.
+  .sales-diagnosis-competitor-overview {
+    display: block !important;
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-left: 0 !important;
+  }
+
+  .sales-diagnosis-competitor-overview > .ant-col {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    flex: none !important;
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+  }
+
+  .sales-diagnosis-competitor-overview > .ant-col + .ant-col {
+    margin-top: 16px !important;
+  }
+
+  .sales-diagnosis-report tr,
+  .sales-diagnosis-report h1,
+  .sales-diagnosis-report h2,
+  .sales-diagnosis-report h3,
+  .sales-diagnosis-report h4,
+  .sales-diagnosis-report h5 {
+    break-inside: avoid;
+    break-after: avoid;
+  }
+
+  .sales-diagnosis-report .ant-collapse-item,
+  .sales-diagnosis-report .ant-table-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  // Ant Design Row/Col/Card uses flex and computed heights that Chromium may
+  // fragment despite break-inside. Printing uses a plain block-flow copy.
+  .sales-diagnosis-optimization-screen-list {
+    display: none !important;
+  }
+
+  .sales-diagnosis-optimization-print-list {
+    display: block !important;
+  }
+
+  .sales-diagnosis-optimization-print-item {
+    display: block;
+    padding: 14px 16px;
+    margin: 0 0 16px;
+    overflow: visible;
+    border: 1px solid #d9d9d9;
+    border-top: 3px solid #1677ff;
+    border-radius: 6px;
+    break-inside: avoid-page !important;
+    page-break-inside: avoid !important;
+  }
+
+  .sales-diagnosis-optimization-print-item > header {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #d9d9d9;
+  }
+
+  .sales-diagnosis-optimization-print-item h4,
+  .sales-diagnosis-optimization-print-item p {
+    margin: 0;
+  }
+
+  .sales-diagnosis-optimization-print-item header > span {
+    flex: none;
+    padding: 2px 10px;
+    color: #1677ff;
+    background: #e6f4ff;
+    border-radius: 999px;
+  }
+
+  .sales-diagnosis-optimization-print-item header > span[data-priority='0'] {
+    color: #cf1322;
+    background: #fff1f0;
+  }
+
+  .sales-diagnosis-optimization-print-item header > span[data-priority='1'] {
+    color: #d46b08;
+    background: #fff7e6;
+  }
+
+  .sales-diagnosis-optimization-print-item header > span[data-priority='2'] {
+    color: #d48806;
+    background: #fffbe6;
+  }
+
+  .sales-diagnosis-report p,
+  .sales-diagnosis-report li {
+    orphans: 3;
+    widows: 3;
+  }
+
+  .sales-diagnosis-report .ant-typography {
+    max-height: none !important;
+    overflow: visible !important;
+    -webkit-line-clamp: unset !important;
+  }
+
+  .sales-diagnosis-report canvas,
+  .sales-diagnosis-report svg {
+    max-width: 100% !important;
+  }
+}

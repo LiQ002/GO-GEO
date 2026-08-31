@@ -1,0 +1,65 @@
+dist
+node_modules
+out
+puppeteer-test.local.js
+puppeteer-after.png
+*.pb.go
+
+# WorkBuddy 项目记忆（跨账号恢复用，不提交）
+.workbuddy/
+
+# 本地测试脚本与证据截图
+start-and-test.js
+start-geo-services.bat
+start-services.bat
+start-services.ps1
+test-and-stop.bat
+test-api.js
+test-publish-flow.js
+watch.ps1
+userconsole/scripts/ui-smoke-test.cjs
+worker-mechanism-verify-report-2026-07-27.md
+publish-integration-test-report-2026-07-31.md
+zhihu-publish-fix-summary-2026-07-30.md
+article-12-markdown.md
+puppeteer-editor-locator.zip
+geoclient/publish-evidence/
+geoclient/scripts/explore-platforms*.mjs
+geoclient/scripts/signal-*.mjs
+new-platform-evidence/
+userconsole-evidence/
+logs/
+
+# IDE / 工具临时目录
+.codebuddy/
+
+# 本地 pnpm 产物（项目使用 npm/package-lock.json）
+admin/pnpm-lock.yaml
+admin/pnpm-workspace.yaml
+userconsole/pnpm-lock.yaml
+userconsole/pnpm-workspace.yaml
+
+# 本地配置文件（含真实密码/密钥，不入库）
+*.local.yaml
+
+# 临时分析/调试产物
+_auth_helper_analysis/
+main.exe_extracted/
+fix_quota_metrics.go
+check_domains.py
+diag-*.json
+query_output.txt
+temp_git_log.txt
+test-report.json
+
+# 二进制文档（临时）
+*.docx
+
+# PyInstaller / 逆向分析产物
+*.pyc.txt
+
+# 本地备份
+_config_backup/
+
+# 临时截图/证据
+geoclient/geo-evidence/

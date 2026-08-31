@@ -1,0 +1,169 @@
+syntax = "proto3";
+package user.v1;
+
+import "common/v1/article_type.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// 可用资源目录服务。
+service CatalogService {
+  // 查询文章类型目录。
+  rpc ListArticleTypeCatalog(ListArticleTypeCatalogRequest) returns (ListArticleTypeCatalogReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询文章类型目录"};
+    option (google.api.http) = {get: "/api/user/v1/catalog/article-types"};
+  }
+  // 查询写作模型目录。
+  rpc ListWritingModelCatalog(ListWritingModelCatalogRequest) returns (ListWritingModelCatalogReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询写作模型目录"};
+    option (google.api.http) = {get: "/api/user/v1/catalog/writing-models"};
+  }
+  // 查询平台已启用的投放渠道目录。
+  rpc ListPublishChannelCatalog(ListPublishChannelCatalogRequest) returns (ListPublishChannelCatalogReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询企业可用投放渠道"};
+    option (google.api.http) = {get: "/api/user/v1/catalog/publish-channels"};
+  }
+  // 查询平台已启用的投放渠道，供授权客户端展示。
+  rpc ListPublishChannels(ListPublishChannelsRequest) returns (ListPublishChannelsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询客户端可用投放渠道"};
+    option (google.api.http) = {get: "/api/user/v1/publish-channels"};
+  }
+  // 查询发布目标目录。
+  rpc ListPublishTargetCatalog(ListPublishTargetCatalogRequest) returns (ListPublishTargetCatalogReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询发布目标目录"};
+    option (google.api.http) = {get: "/api/user/v1/catalog/publish-targets"};
+  }
+  // 查询平台已启用的模型检测站点目录。
+  rpc ListInclusionSiteCatalog(ListInclusionSiteCatalogRequest) returns (ListInclusionSiteCatalogReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询企业可用模型检测站点"};
+    option (google.api.http) = {get: "/api/user/v1/catalog/inclusion-sites"};
+  }
+  // 查询平台已启用的模型检测站点，供授权客户端展示。
+  rpc ListInclusionSites(ListInclusionSitesRequest) returns (ListInclusionSitesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询客户端可用模型检测站点"};
+    option (google.api.http) = {get: "/api/user/v1/inclusion-sites"};
+  }
+}
+// 目录项数据。
+message CatalogItem {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 分类。
+  string category = 4;
+  // 说明。
+  string description = 5;
+  // 图标地址。
+  string icon = 6;
+  // 能力配置 JSON。
+  string capabilities_json = 7;
+  // 展示配置 JSON。
+  string display_config_json = 8;
+  // 当前版本编号。
+  uint64 current_version_id = 9;
+  // 是否需要账号授权。
+  bool account_required = 10;
+  // 父级编号。
+  uint64 parent_id = 11;
+  // 客户端自动化驱动类型，从 1 开始。
+  int32 driver_type = 12;
+  // 客户端授权登录入口。
+  string login_url = 13;
+}
+// 企业可用文章类型目录项。
+message ArticleTypeCatalogItem {
+  // 文章类型编号，创建生成任务时直接提交该编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 说明。
+  string description = 4;
+  // 图标地址。
+  string icon = 5;
+  // 当前配置修订号。
+  uint32 config_revision = 6;
+  // 当前生效的结构化生成配置。
+  ArticleTypePublicConfig config = 7;
+}
+// 企业侧可见的文章生成配置；不包含平台提示词和内部质量规则。
+message ArticleTypePublicConfig {
+  // 内容生成目标。
+  string content_goal = 1;
+  // 目标受众。
+  string target_audience = 2;
+  // 文章语气。
+  string tone = 3;
+  // 建议最小字数。
+  uint32 recommended_min_words = 4;
+  // 建议最大字数。
+  uint32 recommended_max_words = 5;
+  // 文章章节结构。
+  repeated common.v1.ArticleTypeSection sections = 6;
+  // 企业生成时需要填写的输入项。
+  repeated common.v1.ArticleTypeInputField input_fields = 7;
+  // 输出格式：1 Markdown。
+  int32 output_format = 8;
+  // 该类型允许的写作模型编号列表；为空时不限制。
+  repeated uint64 writing_model_ids = 9;
+  // 默认写作模型编号。
+  uint64 default_writing_model_id = 10;
+  // 该类型适用的投放渠道编号列表；为空时不限制。
+  repeated uint64 publish_channel_ids = 11;
+}
+// 查询文章类型目录请求参数。
+message ListArticleTypeCatalogRequest {}
+// 查询文章类型目录响应结果。
+message ListArticleTypeCatalogReply {
+  // 数据列表。
+  repeated ArticleTypeCatalogItem items = 1;
+}
+// 查询写作模型目录请求参数。
+message ListWritingModelCatalogRequest {}
+// 查询写作模型目录响应结果。
+message ListWritingModelCatalogReply {
+  // 数据列表。
+  repeated CatalogItem items = 1;
+}
+// 查询投放渠道目录请求参数。
+message ListPublishChannelCatalogRequest {}
+// 查询投放渠道目录响应结果。
+message ListPublishChannelCatalogReply {
+  // 数据列表。
+  repeated CatalogItem items = 1;
+}
+// 查询客户端可用投放渠道请求参数。
+message ListPublishChannelsRequest {}
+// 查询客户端可用投放渠道响应结果。
+message ListPublishChannelsReply {
+  // 数据列表。
+  repeated CatalogItem items = 1;
+}
+// 查询发布目标目录请求参数。
+message ListPublishTargetCatalogRequest {
+  // 发布渠道编号。
+  uint64 publish_channel_id = 1;
+}
+// 查询发布目标目录响应结果。
+message ListPublishTargetCatalogReply {
+  // 数据列表。
+  repeated CatalogItem items = 1;
+}
+// 查询检测站点目录请求参数。
+message ListInclusionSiteCatalogRequest {}
+// 查询检测站点目录响应结果。
+message ListInclusionSiteCatalogReply {
+  // 数据列表。
+  repeated CatalogItem items = 1;
+}
+// 查询客户端可用模型检测站点请求参数。
+message ListInclusionSitesRequest {}
+// 查询客户端可用模型检测站点响应结果。
+message ListInclusionSitesReply {
+  // 数据列表。
+  repeated CatalogItem items = 1;
+}

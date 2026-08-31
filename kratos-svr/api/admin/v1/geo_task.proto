@@ -1,0 +1,286 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// GEO 检测任务服务。
+service GeoTaskService {
+  // 查询 GEO 检测任务列表。
+  rpc ListGeoTasks(ListGeoTasksRequest) returns (ListGeoTasksReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询 GEO 检测任务列表"};
+    option (google.api.http) = {get: "/api/admin/v1/geo-tasks"};
+  }
+  // 获取 GEO 检测任务。
+  rpc GetGeoTask(GetGeoTaskRequest) returns (GeoTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取 GEO 检测任务"};
+    option (google.api.http) = {get: "/api/admin/v1/geo-tasks/{id}"};
+  }
+  // 重试 GEO 检测任务。
+  rpc RetryGeoTask(GeoTaskActionRequest) returns (GeoTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试 GEO 检测任务"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/geo-tasks/{id}/retry"
+      body: "*"
+    };
+  }
+  // 取消 GEO 检测任务。
+  rpc CancelGeoTask(GeoTaskActionRequest) returns (GeoTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "取消 GEO 检测任务"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/geo-tasks/{id}/cancel"
+      body: "*"
+    };
+  }
+  // 创建人工复核。
+  rpc CreateManualReview(CreateManualReviewRequest) returns (GeoTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建人工复核"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/geo-tasks/{task_id}/manual-reviews"
+      body: "*"
+    };
+  }
+}
+
+// GEO 检测任务数据。
+message GeoTask {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 企业名称。
+  string enterprise_name = 3;
+  // 监测计划编号。
+  optional uint64 monitor_plan_id = 4;
+  // 监测套餐名称。
+  string monitor_plan_name = 5;
+  // 品牌编号。
+  uint64 brand_id = 6;
+  // 品牌名称。
+  string brand_name = 7;
+  // 问题编号。
+  uint64 question_id = 8;
+  // 问题文本。
+  string question_text = 9;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 10;
+  // 检测模型站点名称。
+  string inclusion_site_name = 11;
+  // 平台账号编号。
+  optional uint64 platform_account_id = 12;
+  // 模型入口。
+  string model_entry = 13;
+  // 语言区域。
+  string locale = 14;
+  // 区域。
+  string region = 15;
+  // 状态。
+  string status = 16;
+  // 任务优先级。
+  int32 priority = 17;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 18;
+  // 已尝试次数。
+  uint32 attempt_count = 19;
+  // 最大尝试次数。
+  uint32 max_attempts = 20;
+  // 错误分类。
+  string error_category = 21;
+  // 错误编码。
+  string error_code = 22;
+  // 错误信息。
+  string error_message = 23;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 24;
+  // 数据版本号。
+  uint64 version = 25;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 26;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 27;
+  // 品牌是否被提及（收录判定）。
+  bool brand_mentioned = 28;
+  // 会话引用（官方对话链接）。
+  string session_ref = 29;
+  // 终端类型: 1=电脑端 2=移动端。
+  int32 terminal_type = 30;
+}
+
+// 回答快照数据。
+message AnswerSnapshot {
+  // 唯一编号。
+  uint64 id = 1;
+  // 尝试编号。
+  uint64 attempt_id = 2;
+  // 模型入口。
+  string model_entry = 3;
+  // 问题文本。
+  string question_text = 4;
+  // 回答文本。
+  string answer_text = 5;
+  // 回答状态。
+  string answer_status = 6;
+  // 截图键名。
+  string screenshot_key = 7;
+  // 证据数据 JSON。
+  string evidence_json = 8;
+  // 会话引用。
+  string session_ref = 9;
+  // 采集时间。
+  google.protobuf.Timestamp observed_at = 10;
+  // 客户端版本。
+  string client_version = 11;
+}
+// 引用记录数据。
+message Citation {
+  // 唯一编号。
+  uint64 id = 1;
+  // 地址。
+  string url = 2;
+  // 域名。
+  string domain = 3;
+  // 标题。
+  string title = 4;
+  // 位置。
+  uint32 position = 5;
+  // 是否企业来源。
+  bool is_enterprise_source = 6;
+  // 文章编号。
+  optional uint64 article_id = 7;
+  // 扩展元数据 JSON。
+  string metadata_json = 8;
+}
+// 提及记录数据。
+message Mention {
+  // 唯一编号。
+  uint64 id = 1;
+  // 实体类型。
+  string entity_type = 2;
+  // 实体编号。
+  uint64 entity_id = 3;
+  // 文本。
+  string text = 4;
+  // 位置。
+  uint32 position = 5;
+  // 情感倾向。
+  string sentiment = 6;
+  // 置信度。
+  double confidence = 7;
+}
+// 分析结果数据。
+message AnalysisResult {
+  // 唯一编号。
+  uint64 id = 1;
+  // 分析版本。
+  uint32 analysis_version = 2;
+  // 规则版本。
+  string rule_version = 3;
+  // 状态。
+  string status = 4;
+  // 品牌已提及。
+  bool brand_mentioned = 5;
+  // 企业被引用。
+  bool enterprise_cited = 6;
+  // 可见性评分。
+  double visibility_score = 7;
+  // 准确性评分。
+  double accuracy_score = 8;
+  // 置信度。
+  double confidence = 9;
+  // 结果数据 JSON。
+  string result_json = 10;
+}
+// 人工复核数据。
+message ManualReview {
+  // 唯一编号。
+  uint64 id = 1;
+  // 回答快照编号。
+  uint64 answer_snapshot_id = 2;
+  // 分析结果编号。
+  optional uint64 analysis_result_id = 3;
+  // 审核人编号。
+  uint64 reviewer_id = 4;
+  // 变更前数据 JSON。
+  string before_json = 5;
+  // 变更后数据 JSON。
+  string after_json = 6;
+  // 操作原因。
+  string reason = 7;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 8;
+}
+// GEO 检测任务详情数据。
+message GeoTaskDetail {
+  // 任务。
+  GeoTask task = 1;
+  // 回答。
+  AnswerSnapshot answer = 2;
+  // 引用列表。
+  repeated Citation citations = 3;
+  // 提及列表。
+  repeated Mention mentions = 4;
+  // 分析。
+  AnalysisResult analysis = 5;
+  // 审核记录。
+  repeated ManualReview reviews = 6;
+}
+
+// 查询 GEO 检测任务列表请求参数。
+message ListGeoTasksRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  uint64 enterprise_id = 3;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 4;
+  // 状态。
+  string status = 5;
+  // 错误分类。
+  string error_category = 6;
+  // 搜索关键词。
+  string keyword = 7;
+}
+// 查询 GEO 检测任务列表响应结果。
+message ListGeoTasksReply {
+  // 数据列表。
+  repeated GeoTask items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取 GEO 检测任务请求参数。
+message GetGeoTaskRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// GEO 检测任务操作请求参数。
+message GeoTaskActionRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 创建人工复核请求参数。
+message CreateManualReviewRequest {
+  // 任务编号。
+  uint64 task_id = 1;
+  // 回答快照编号。
+  uint64 answer_snapshot_id = 2;
+  // 分析结果编号。
+  optional uint64 analysis_result_id = 3;
+  // 变更前数据 JSON。
+  string before_json = 4;
+  // 变更后数据 JSON。
+  string after_json = 5;
+  // 操作原因。
+  string reason = 6;
+}

@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "outDir": "main",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "sourceMap": true,
+    "paths": {
+      "@platforms": ["lib/platforms/index.ts"],
+      "@platforms/*": ["lib/platforms/*"]
+    }
+  },
+  "include": ["electron/**/*.ts", "lib/platforms/**/*.ts", "lib/model-platforms/**/*.ts"],
+  "exclude": ["node_modules"]
+}

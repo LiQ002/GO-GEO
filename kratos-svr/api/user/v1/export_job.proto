@@ -1,0 +1,119 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 数据导出任务服务。
+service ExportJobService {
+  // 创建数据导出任务。
+  rpc CreateExportJob(CreateExportJobRequest) returns (ExportJob) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建数据导出任务"};
+    option (google.api.http) = {
+      post: "/api/user/v1/export-jobs"
+      body: "*"
+    };
+  }
+  // 获取数据导出任务。
+  rpc GetExportJob(GetExportJobRequest) returns (ExportJob) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取数据导出任务"};
+    option (google.api.http) = {get: "/api/user/v1/export-jobs/{id}"};
+  }
+  // 查询导出任务列表。
+  rpc ListExportJobs(ListExportJobsRequest) returns (ListExportJobsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询导出任务列表"};
+    option (google.api.http) = {get: "/api/user/v1/export-jobs"};
+  }
+  // 取消数据导出任务。
+  rpc CancelExportJob(CancelExportJobRequest) returns (ExportJob) {
+    option (gnostic.openapi.v3.operation) = {summary: "取消数据导出任务"};
+    option (google.api.http) = {
+      post: "/api/user/v1/export-jobs/{id}:cancel"
+      body: "*"
+    };
+  }
+}
+
+// 数据导出任务数据。
+message ExportJob {
+  // 唯一编号。
+  uint64 id = 1;
+  // 资源类型。
+  string resource_type = 2;
+  // 格式。
+  string format = 3;
+  // 筛选条件 JSON。
+  string filter_json = 4;
+  // 状态。
+  string status = 5;
+  // 客户端请求幂等编号。
+  string client_request_id = 6;
+  // 下载就绪。
+  bool download_ready = 7;
+  // 文件哈希。
+  string file_hash = 8;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 9;
+  // 错误信息。
+  string error_message = 10;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 11;
+  // 取消时间。
+  google.protobuf.Timestamp cancelled_at = 12;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 13;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 14;
+}
+
+// 创建数据导出任务请求参数。
+message CreateExportJobRequest {
+  // 资源类型。
+  string resource_type = 1;
+  // 格式。
+  string format = 2;
+  // 资源专用且创建后不可变的导出筛选条件 JSON。
+  string filter_json = 3;
+  // 客户端请求幂等编号。
+  string client_request_id = 4;
+}
+
+// 获取数据导出任务请求参数。
+message GetExportJobRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询导出任务列表请求参数。
+message ListExportJobsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 资源类型。
+  string resource_type = 3;
+  // 格式。
+  string format = 4;
+  // 状态。
+  string status = 5;
+}
+
+// 查询导出任务列表响应结果。
+message ListExportJobsReply {
+  // 数据列表。
+  repeated ExportJob items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 取消数据导出任务请求参数。
+message CancelExportJobRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}

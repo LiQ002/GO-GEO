@@ -1,0 +1,161 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+// 平台角色服务。
+service AdminRoleService {
+  // 创建平台角色。
+  rpc CreateAdminRole(CreateAdminRoleRequest) returns (AdminRole) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建平台角色"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/admin-roles"
+      body: "*"
+    };
+  }
+  // 获取平台角色。
+  rpc GetAdminRole(GetAdminRoleRequest) returns (AdminRole) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取平台角色"};
+    option (google.api.http) = {get: "/api/admin/v1/admin-roles/{id}"};
+  }
+  // 查询平台管理员角色列表。
+  rpc ListAdminRoles(ListAdminRolesRequest) returns (ListAdminRolesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询平台管理员角色列表"};
+    option (google.api.http) = {get: "/api/admin/v1/admin-roles"};
+  }
+  // 更新平台角色。
+  rpc UpdateAdminRole(UpdateAdminRoleRequest) returns (AdminRole) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新平台角色"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/admin-roles/{role.id}"
+      body: "*"
+    };
+  }
+  // 删除平台角色。
+  rpc DeleteAdminRole(DeleteAdminRoleRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除平台角色"};
+    option (google.api.http) = {delete: "/api/admin/v1/admin-roles/{id}"};
+  }
+  // 查询平台管理员权限列表。
+  rpc ListAdminPermissions(ListAdminPermissionsRequest) returns (ListAdminPermissionsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询平台管理员权限列表"};
+    option (google.api.http) = {get: "/api/admin/v1/admin-permissions"};
+  }
+  // 设置平台管理员角色权限列表。
+  rpc SetAdminRolePermissions(SetAdminRolePermissionsRequest) returns (AdminRole) {
+    option (gnostic.openapi.v3.operation) = {summary: "设置平台管理员角色权限列表"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/admin-roles/{id}/permissions"
+      body: "*"
+    };
+  }
+}
+// 平台权限数据。
+message AdminPermission {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 资源。
+  string resource = 4;
+  // 操作类型。
+  string action = 5;
+  // 说明。
+  string description = 6;
+}
+// 平台角色数据。
+message AdminRole {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 说明。
+  string description = 4;
+  // 数据范围。
+  int32 data_scope = 5;
+  // 状态。
+  int32 status = 6;
+  // 权限列表。
+  repeated AdminPermission permissions = 7;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 8;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 9;
+}
+// 创建平台角色请求参数。
+message CreateAdminRoleRequest {
+  // 角色。
+  AdminRole role = 1;
+  // 权限编号列表。
+  repeated uint64 permission_ids = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 获取平台角色请求参数。
+message GetAdminRoleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询平台管理员角色列表请求参数。
+message ListAdminRolesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 搜索关键词。
+  string keyword = 4;
+}
+// 查询平台管理员角色列表响应结果。
+message ListAdminRolesReply {
+  // 数据列表。
+  repeated AdminRole items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新平台角色请求参数。
+message UpdateAdminRoleRequest {
+  // 角色。
+  AdminRole role = 1;
+  // 操作原因。
+  string reason = 2;
+}
+// 删除平台角色请求参数。
+message DeleteAdminRoleRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 操作原因。
+  string reason = 2;
+}
+// 查询平台管理员权限列表请求参数。
+message ListAdminPermissionsRequest {
+  // 资源。
+  string resource = 1;
+  // 搜索关键词。
+  string keyword = 2;
+}
+// 查询平台管理员权限列表响应结果。
+message ListAdminPermissionsReply {
+  // 数据列表。
+  repeated AdminPermission items = 1;
+}
+// 设置平台管理员角色权限列表请求参数。
+message SetAdminRolePermissionsRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 权限编号列表。
+  repeated uint64 permission_ids = 2;
+  // 操作原因。
+  string reason = 3;
+}

@@ -1,0 +1,73 @@
+stages:
+  - build
+  - build-frontend
+  - deploy
+
+variables:
+  DOCKER_DRIVER: overlay2
+  PROJECT_ROOT_NAMESPACE: geo
+  PROJECT_NAME: geo-next-ui
+  KUBECONFIG: /etc/deploy/config
+
+build-api-user:
+  stage: build
+  script:
+    - cd kratos-svr
+    - docker build -t "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-api-user:latest" . -f Dockerfile-user
+    - docker login registry.gbicom.com:8443 -u gitlab -p Gitlab123
+    - docker push "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-api-user:latest"
+    - docker rmi registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-api-user:latest
+  only:
+    - develop
+
+build-api-admin:
+  stage: build
+  script:
+    - cd kratos-svr
+    - docker build -t "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-api-admin:latest" . -f Dockerfile-admin
+    - docker login registry.gbicom.com:8443 -u gitlab -p Gitlab123
+    - docker push "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-api-admin:latest"
+    - docker rmi registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-api-admin:latest
+  only:
+    - develop
+
+build-user:
+  stage: build-frontend
+  script:
+    - cd userconsole
+    - docker build -t "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/$PROJECT_NAME:latest" .
+    - docker login registry.gbicom.com:8443 -u gitlab -p Gitlab123
+    - docker push "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/$PROJECT_NAME:latest"
+    - docker rmi registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/$PROJECT_NAME:latest
+  only:
+    - develop
+
+build-admin:
+  stage: build-frontend
+  script:
+    - cd admin
+    - docker build -t "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-admin-ui:latest" .
+    - docker login registry.gbicom.com:8443 -u gitlab -p Gitlab123
+    - docker push "registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-admin-ui:latest"
+    - docker rmi registry.gbicom.com:8443/$PROJECT_ROOT_NAMESPACE/geo-admin-ui:latest
+  only:
+    - develop
+
+deploy:
+  stage: deploy
+  dependencies:
+    - build-api-user
+    - build-api-admin
+    - build-user
+    - build-admin
+  script:
+    - export project_name='geo-api-user'
+    - echo rancher kubectl --namespace=api patch deployment $project_name  --type=strategic -p \'"{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$project_name\",\"env\":[{\"name\":\"FORCE_RESTART_AT\",\"value\":\"$RANDOM\"}]}]}}}}"\'|sh
+    - export project_name='geo-api-admin'
+    - echo rancher kubectl --namespace=api patch deployment $project_name  --type=strategic -p \'"{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$project_name\",\"env\":[{\"name\":\"FORCE_RESTART_AT\",\"value\":\"$RANDOM\"}]}]}}}}"\'|sh
+    - export project_name='geo-next-ui'
+    - echo rancher kubectl --namespace=api patch deployment $project_name  --type=strategic -p \'"{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$project_name\",\"env\":[{\"name\":\"FORCE_RESTART_AT\",\"value\":\"$RANDOM\"}]}]}}}}"\'|sh
+    - export project_name='geo-admin-ui'
+    - echo rancher kubectl --namespace=api patch deployment $project_name  --type=strategic -p \'"{\"spec\":{\"template\":{\"spec\":{\"containers\":[{\"name\":\"$project_name\",\"env\":[{\"name\":\"FORCE_RESTART_AT\",\"value\":\"$RANDOM\"}]}]}}}}"\'|sh
+  only:
+    - develop

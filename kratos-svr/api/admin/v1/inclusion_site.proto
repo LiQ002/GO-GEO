@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 检测模型站点服务。
+service InclusionSiteService {
+  // 创建检测模型站点。
+  rpc CreateInclusionSite(CreateInclusionSiteRequest) returns (InclusionSite) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建检测模型站点"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/inclusion-sites"
+      body: "*"
+    };
+  }
+  // 获取检测模型站点。
+  rpc GetInclusionSite(GetInclusionSiteRequest) returns (InclusionSite) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取检测模型站点"};
+    option (google.api.http) = {get: "/api/admin/v1/inclusion-sites/{id}"};
+  }
+  // 查询检测模型站点列表。
+  rpc ListInclusionSites(ListInclusionSitesRequest) returns (ListInclusionSitesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询检测模型站点列表"};
+    option (google.api.http) = {get: "/api/admin/v1/inclusion-sites"};
+  }
+  // 更新检测模型站点。
+  rpc UpdateInclusionSite(UpdateInclusionSiteRequest) returns (InclusionSite) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新检测模型站点"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/inclusion-sites/{inclusion_site.id}"
+      body: "*"
+    };
+  }
+  // 删除检测模型站点。
+  rpc DeleteInclusionSite(DeleteInclusionSiteRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除检测模型站点"};
+    option (google.api.http) = {delete: "/api/admin/v1/inclusion-sites/{id}"};
+  }
+  // 上传检测模型站点图标。
+  rpc UploadInclusionSiteIcon(UploadInclusionSiteIconRequest) returns (UploadInclusionSiteIconReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "上传检测模型站点图标"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/inclusion-site-icons"
+      body: "*"
+    };
+  }
+}
+
+// 检测模型站点数据。
+message InclusionSite {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 站点入口地址。
+  string entry_url = 4;
+  // 图标地址。
+  string icon = 5;
+  // 状态。
+  int32 status = 6;
+  // 授权方式。
+  int32 authorization_type = 7;
+  reserved 8, 9, 10, 11, 12, 13;
+  reserved "capabilities_json", "model_entries_json", "evidence_rules_json", "limits_json", "availability_json", "visibility_json";
+  // 驱动版本。
+  string driver_version = 14;
+  // 维护提示。
+  string maintenance_message = 15;
+  // 排序值。
+  int32 sort_order = 16;
+  // 数据版本号。
+  uint64 version = 17;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 18;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 19;
+  // 客户端自动化驱动类型，从 1 开始，不等同于业务编码。
+  int32 driver_type = 20;
+}
+// 创建检测模型站点请求参数。
+message CreateInclusionSiteRequest {
+  // 检测模型站点。
+  InclusionSite inclusion_site = 1;
+}
+// 获取检测模型站点请求参数。
+message GetInclusionSiteRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询检测模型站点列表请求参数。
+message ListInclusionSitesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 搜索关键词。
+  string keyword = 4;
+}
+// 查询检测模型站点列表响应结果。
+message ListInclusionSitesReply {
+  // 数据列表。
+  repeated InclusionSite items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新检测模型站点请求参数。
+message UpdateInclusionSiteRequest {
+  // 检测模型站点。
+  InclusionSite inclusion_site = 1;
+}
+// 删除检测模型站点请求参数。
+message DeleteInclusionSiteRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+// 上传检测模型站点图标请求参数。
+message UploadInclusionSiteIconRequest {
+  // 文件名。
+  string filename = 1;
+  // 内容类型。
+  string content_type = 2;
+  // 内容。
+  bytes content = 3;
+}
+// 上传检测模型站点图标响应结果。
+message UploadInclusionSiteIconReply {
+  // 地址。
+  string url = 1;
+}

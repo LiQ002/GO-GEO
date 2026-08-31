@@ -1,0 +1,73 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "geoclient: build electron",
+      "type": "shell",
+      "command": "pnpm run build:electron",
+      "options": {
+        "cwd": "${workspaceFolder}/geoclient"
+      },
+      "group": "build",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "geoclient: next dev (client)",
+      "type": "shell",
+      "command": "pnpm exec cross-env NEXT_PUBLIC_APP_MODE=client next dev",
+      "options": {
+        "cwd": "${workspaceFolder}/geoclient"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "next",
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Ready in|started server on|Local:)"
+        }
+      }
+    },
+    {
+      "label": "geoclient: next dev (operator)",
+      "type": "shell",
+      "command": "pnpm exec cross-env NEXT_PUBLIC_APP_MODE=operator next dev",
+      "options": {
+        "cwd": "${workspaceFolder}/geoclient"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "next",
+        "pattern": {
+          "regexp": "."
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".",
+          "endsPattern": "(Ready in|started server on|Local:)"
+        }
+      }
+    },
+    {
+      "label": "geoclient: prepare client debug",
+      "dependsOn": [
+        "geoclient: build electron",
+        "geoclient: next dev (client)"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    },
+    {
+      "label": "geoclient: prepare operator debug",
+      "dependsOn": [
+        "geoclient: build electron",
+        "geoclient: next dev (operator)"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    }
+  ]
+}

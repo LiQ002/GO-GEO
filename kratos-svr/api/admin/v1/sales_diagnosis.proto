@@ -1,0 +1,973 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 售前诊断服务。
+service SalesDiagnosisService {
+  // 创建一次独立的售前诊断。
+  rpc CreateSalesDiagnosis(CreateSalesDiagnosisRequest) returns (SalesDiagnosis) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建售前诊断"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/sales-diagnoses"
+      body: "*"
+    };
+  }
+  // 获取售前诊断详情、任务和历史结果。
+  rpc GetSalesDiagnosis(GetSalesDiagnosisRequest) returns (SalesDiagnosis) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取售前诊断详情"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-diagnoses/{id}"};
+  }
+  // 查询售前诊断历史列表。
+  rpc ListSalesDiagnoses(ListSalesDiagnosesRequest) returns (ListSalesDiagnosesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询售前诊断历史"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-diagnoses"};
+  }
+  // 将待处理和失败任务提交到后台执行队列并立即返回。
+  rpc RunSalesDiagnosis(RunSalesDiagnosisRequest) returns (SalesDiagnosis) {
+    option (gnostic.openapi.v3.operation) = {summary: "启动后台售前诊断"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/sales-diagnoses/{id}:run"
+      body: "*"
+    };
+  }
+  // 取消尚未完成的售前诊断。
+  rpc CancelSalesDiagnosis(CancelSalesDiagnosisRequest) returns (SalesDiagnosis) {
+    option (gnostic.openapi.v3.operation) = {summary: "取消售前诊断"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/sales-diagnoses/{id}:cancel"
+      body: "*"
+    };
+  }
+  // 重试一个失败的模型诊断任务。
+  rpc RetrySalesDiagnosisTask(RetrySalesDiagnosisTaskRequest) returns (SalesDiagnosis) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试诊断任务"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/sales-diagnosis-tasks/{task_id}:retry"
+      body: "*"
+    };
+  }
+  // 对比同一客户的两次售前诊断指标。
+  rpc CompareSalesDiagnoses(CompareSalesDiagnosesRequest) returns (CompareSalesDiagnosesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "对比两次售前诊断"};
+    option (google.api.http) = {get: "/api/admin/v1/sales-diagnoses:compare"};
+  }
+}
+
+// 诊断对象类型。
+enum SalesDiagnosisSubjectType {
+  // 未指定。
+  SALES_DIAGNOSIS_SUBJECT_TYPE_UNSPECIFIED = 0;
+  // 销售机会。
+  SALES_DIAGNOSIS_SUBJECT_TYPE_OPPORTUNITY = 1;
+  // 已有企业。
+  SALES_DIAGNOSIS_SUBJECT_TYPE_ENTERPRISE = 2;
+  // 仅使用客户与品牌名称创建的快速品牌诊断。
+  SALES_DIAGNOSIS_SUBJECT_TYPE_QUICK_BRAND = 3;
+}
+
+// 诊断状态。
+enum SalesDiagnosisStatus {
+  // 未指定。
+  SALES_DIAGNOSIS_STATUS_UNSPECIFIED = 0;
+  // 等待执行。
+  SALES_DIAGNOSIS_STATUS_PENDING = 1;
+  // 执行中。
+  SALES_DIAGNOSIS_STATUS_RUNNING = 2;
+  // 全部成功。
+  SALES_DIAGNOSIS_STATUS_SUCCEEDED = 3;
+  // 部分成功。
+  SALES_DIAGNOSIS_STATUS_PARTIALLY_SUCCEEDED = 4;
+  // 全部失败。
+  SALES_DIAGNOSIS_STATUS_FAILED = 5;
+  // 已取消。
+  SALES_DIAGNOSIS_STATUS_CANCELLED = 6;
+}
+
+// 单个问题与模型任务的状态。
+enum SalesDiagnosisTaskStatus {
+  // 未指定。
+  SALES_DIAGNOSIS_TASK_STATUS_UNSPECIFIED = 0;
+  // 等待执行。
+  SALES_DIAGNOSIS_TASK_STATUS_PENDING = 1;
+  // 执行中。
+  SALES_DIAGNOSIS_TASK_STATUS_RUNNING = 2;
+  // 执行成功。
+  SALES_DIAGNOSIS_TASK_STATUS_SUCCEEDED = 3;
+  // 执行失败。
+  SALES_DIAGNOSIS_TASK_STATUS_FAILED = 4;
+  // 已取消。
+  SALES_DIAGNOSIS_TASK_STATUS_CANCELLED = 5;
+}
+
+// 品牌与诊断问题准备阶段状态。
+enum SalesDiagnosisPreparationStatus {
+  // 未指定。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_UNSPECIFIED = 0;
+  // 等待后台执行。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_PENDING = 1;
+  // 后台执行中。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_RUNNING = 2;
+  // 品牌词与问题生成成功。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_SUCCEEDED = 3;
+  // 生成失败，可重新发起诊断重试。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_FAILED = 4;
+  // 使用了人工问题，不需要自动生成。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_SKIPPED = 5;
+  // 诊断已取消。
+  SALES_DIAGNOSIS_PREPARATION_STATUS_CANCELLED = 6;
+}
+
+// 前置研究产生的品牌相关词类型。
+enum SalesDiagnosisBrandTermType {
+  // 未指定。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_UNSPECIFIED = 0;
+  // 目标品牌主名称。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_BRAND = 1;
+  // 目标品牌别名。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_ALIAS = 2;
+  // 核心产品或服务。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_PRODUCT = 3;
+  // 所属品类。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_CATEGORY = 4;
+  // 竞品品牌。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_COMPETITOR = 5;
+  // 典型用户需求场景。
+  SALES_DIAGNOSIS_BRAND_TERM_TYPE_SCENARIO = 6;
+}
+
+// 回答证据类型。
+enum SalesDiagnosisEvidenceType {
+  // 未指定。
+  SALES_DIAGNOSIS_EVIDENCE_TYPE_UNSPECIFIED = 0;
+  // 普通模型知识回答，不代表实时网页引用。
+  SALES_DIAGNOSIS_EVIDENCE_TYPE_MODEL_KNOWLEDGE = 1;
+  // 模型接口返回了来源或引用元数据。
+  SALES_DIAGNOSIS_EVIDENCE_TYPE_PROVIDER_SOURCES = 2;
+}
+
+// 诊断报告状态。
+enum SalesDiagnosisReportStatus {
+  // 未指定。
+  SALES_DIAGNOSIS_REPORT_STATUS_UNSPECIFIED = 0;
+  // 报告已生成。
+  SALES_DIAGNOSIS_REPORT_STATUS_READY = 1;
+}
+
+// 诊断报告发现类型。
+enum SalesDiagnosisReportFindingType {
+  // 未指定。
+  SALES_DIAGNOSIS_REPORT_FINDING_TYPE_UNSPECIFIED = 0;
+  // 问题。
+  SALES_DIAGNOSIS_REPORT_FINDING_TYPE_ISSUE = 1;
+  // 机会。
+  SALES_DIAGNOSIS_REPORT_FINDING_TYPE_OPPORTUNITY = 2;
+  // 建议。
+  SALES_DIAGNOSIS_REPORT_FINDING_TYPE_RECOMMENDATION = 3;
+}
+
+// 诊断报告发现严重程度。
+enum SalesDiagnosisReportSeverity {
+  // 未指定。
+  SALES_DIAGNOSIS_REPORT_SEVERITY_UNSPECIFIED = 0;
+  // 提示。
+  SALES_DIAGNOSIS_REPORT_SEVERITY_INFO = 1;
+  // 中等。
+  SALES_DIAGNOSIS_REPORT_SEVERITY_MEDIUM = 2;
+  // 高优先级。
+  SALES_DIAGNOSIS_REPORT_SEVERITY_HIGH = 3;
+}
+
+// 诊断时冻结的客户资料。
+message SalesDiagnosisProfile {
+  // 客户企业名称。
+  string customer_name = 1;
+  // 客户官网。
+  string website = 2;
+  // 行业。
+  string industry = 3;
+  // 地区。
+  string region = 4;
+  // 品牌名称。
+  string brand_name = 5;
+  // 目标客户说明。
+  string target_audience = 6;
+  // 品牌核心价值。
+  string core_value = 7;
+  // 当前内容建设情况。
+  string current_content = 8;
+  // 当前痛点。
+  string pain_points = 9;
+  // 预期目标。
+  string expected_goals = 10;
+  // 品牌别名。
+  repeated string brand_aliases = 11;
+  // 产品或服务快照。
+  repeated SalesDiagnosisProfileProduct products = 12;
+  // 竞品快照。
+  repeated SalesDiagnosisProfileCompetitor competitors = 13;
+  // 来源数据版本。
+  uint64 source_version = 14;
+  // 诊断创建时冻结的原子官方事实，用于内容采纳率计算。
+  repeated SalesDiagnosisProfileClaim claims = 15;
+}
+
+// 诊断时冻结的一条可核验官方事实。
+message SalesDiagnosisProfileClaim {
+  // 唯一编号。
+  uint64 id = 1;
+  // 事实类型：1 品牌价值，2 产品，3 目标客户，4 现有内容，5 其他。
+  int32 claim_type = 2;
+  // 来源资料字段。
+  string source_field = 3;
+  // 来源子项编号，例如产品快照编号。
+  uint64 source_item_id = 4;
+  // 原子事实正文。
+  string claim_text = 5;
+  // 排序值。
+  int32 sort_order = 6;
+}
+
+// 诊断时冻结的产品或服务。
+message SalesDiagnosisProfileProduct {
+  // 名称。
+  string name = 1;
+  // 说明。
+  string description = 2;
+  // 主要卖点。
+  string selling_points = 3;
+  // 目标客户。
+  string target_audience = 4;
+}
+
+// 诊断时冻结的竞品。
+message SalesDiagnosisProfileCompetitor {
+  // 竞品名称。
+  string name = 1;
+  // 竞品官网。
+  string website = 2;
+  // 竞品说明。
+  string description = 3;
+}
+
+// 诊断问题。
+message SalesDiagnosisQuestion {
+  // 唯一编号。
+  uint64 id = 1;
+  // 问题正文。
+  string question = 2;
+  // 排序值。
+  int32 sort_order = 3;
+  // 来源：1 人工填写，2 前置研究模型生成。
+  int32 source_type = 4;
+  // 问题意图，例如品类推荐或竞品对比。
+  string intent = 5;
+  // 生成该问题要验证的诊断指标。
+  string reason = 6;
+}
+
+// 前置研究生成的一个结构化品牌相关词。
+message SalesDiagnosisBrandTerm {
+  // 唯一编号。
+  uint64 id = 1;
+  // 词语正文。
+  string term = 2;
+  // 词语类型。
+  SalesDiagnosisBrandTermType term_type = 3;
+  // 选择该词的用途或依据。
+  string reason = 4;
+  // 排序值。
+  int32 sort_order = 5;
+}
+
+// 品牌与问题准备阶段的一次不可变模型调用记录。
+message SalesDiagnosisPreparationAttempt {
+  // 唯一编号。
+  uint64 id = 1;
+  // 尝试次数。
+  uint32 attempt_no = 2;
+  // 是否成功生成并落库。
+  bool succeeded = 3;
+  // 识别出的行业。
+  string industry = 4;
+  // 品牌主体与业务摘要。
+  string brand_summary = 5;
+  // 完整提示词快照。
+  string prompt_snapshot = 6;
+  // 第三方原始响应 JSON，仅用于审计和问题排查。
+  string raw_response_json = 7;
+  // 提供商请求编号。
+  string provider_request_id = 8;
+  // 实际响应模型。
+  string response_model = 9;
+  // 输入 Token 数。
+  uint64 input_tokens = 10;
+  // 输出 Token 数。
+  uint64 output_tokens = 11;
+  // 成本，单位为百万分之一货币单位。
+  int64 cost_micros = 12;
+  // 调用耗时，单位毫秒。
+  uint64 duration_ms = 13;
+  // 失败错误码。
+  string error_code = 14;
+  // 失败错误信息。
+  string error_message = 15;
+  // 记录创建时间。
+  google.protobuf.Timestamp created_at = 16;
+}
+
+// 在逐平台采样前执行的品牌词与诊断问题准备任务。
+message SalesDiagnosisPreparation {
+  // 唯一编号。
+  uint64 id = 1;
+  // 执行前置研究的诊断模型编号。
+  uint64 diagnosis_model_id = 2;
+  // 准备阶段状态。
+  SalesDiagnosisPreparationStatus status = 3;
+  // 已尝试次数。
+  uint32 attempt_count = 4;
+  // 最近错误码。
+  string last_error_code = 5;
+  // 最近错误信息。
+  string last_error_message = 6;
+  // 开始时间。
+  google.protobuf.Timestamp started_at = 7;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 8;
+  // 全部不可变调用记录。
+  repeated SalesDiagnosisPreparationAttempt attempts = 9;
+}
+
+// 本次诊断冻结的模型信息，不包含密钥。
+message SalesDiagnosisModel {
+  // 唯一编号。
+  uint64 id = 1;
+  // 平台编写模型配置编号。
+  uint64 writing_model_id = 2;
+  // 展示名称。
+  string display_name = 3;
+  // 模型提供商数字枚举。
+  int32 provider = 4;
+  // 调用协议数字枚举。
+  int32 protocol = 5;
+  // 模型 API 地址。
+  string base_url = 6;
+  // 模型 ID。
+  string model_id = 7;
+  // 模型配置版本。
+  uint64 model_version = 8;
+  // 随机性参数。
+  double temperature = 9;
+  // Top P 参数。
+  double top_p = 10;
+  // 最大输出 Token 数。
+  uint32 max_tokens = 11;
+  // 调用超时秒数。
+  uint32 timeout_seconds = 12;
+  // 排序值。
+  int32 sort_order = 13;
+  // 信源能力：1 不支持结构化信源，2 接口返回可核验信源元数据。
+  int32 citation_capability = 14;
+  // 本次冻结的诊断 API：1 Chat Completions，2 Responses API。
+  int32 diagnosis_api_mode = 15;
+  // 本次冻结配置是否启用供应商原生联网搜索工具。
+  bool diagnosis_web_search_enabled = 16;
+}
+
+// 模型回答中的引用。
+message SalesDiagnosisCitation {
+  // 唯一编号。
+  uint64 id = 1;
+  // 来源标题。
+  string title = 2;
+  // 来源地址。
+  string url = 3;
+  // 来源域名。
+  string domain = 4;
+  // 排序值。
+  int32 sort_order = 5;
+  // 提供商来源编号。
+  string provider_source_id = 6;
+  // 来源平台名称。
+  string source_name = 7;
+  // 引用摘要。
+  string snippet = 8;
+  // 引用在回答中的位置；零表示未提供。
+  int32 position = 9;
+  // 来源归属：1 未知，2 目标品牌，3 竞品。
+  int32 ownership_type = 10;
+  // 核验状态：1 提供商原始元数据，2 已额外核验。
+  int32 verification_status = 11;
+  // 信源采集时间。
+  google.protobuf.Timestamp captured_at = 12;
+  // 信源类型：1 其他，2 官方，3 百科，4 新闻资讯，5 行业垂类，6 社区UGC，7 攻略游记，8 OTA票务，9 文库资料。
+  int32 source_type = 13;
+}
+
+// 模型回答中一个品牌实体的结构化提及证据。
+message SalesDiagnosisEntityMention {
+  uint64 id = 1;
+  // 1 目标品牌，2 已配置竞品，3 回答中新发现品牌。
+  int32 entity_type = 2;
+  uint64 entity_ref_id = 3;
+  string entity_name = 4;
+  uint32 mention_count = 5;
+  int32 first_position = 6;
+  // 只有回答明确给出推荐顺序时才大于零。
+  int32 rank_position = 7;
+  // 1 未知，2 正向，3 中性，4 负向。
+  int32 sentiment = 8;
+  double confidence = 9;
+  string evidence_excerpt = 10;
+}
+
+// 回答对一条冻结官方事实的采纳证据。
+message SalesDiagnosisClaimMatch {
+  uint64 id = 1;
+  uint64 claim_id = 2;
+  bool matched = 3;
+  double confidence = 4;
+  string evidence_excerpt = 5;
+}
+
+// 一次不可变回答的版本化结构分析结果。
+message SalesDiagnosisResultAnalysis {
+  uint64 id = 1;
+  uint32 analysis_version = 2;
+  string rule_version = 3;
+  // 1 规则，2 模型，3 混合。
+  int32 analyzer_kind = 4;
+  string analyzer_model_name = 5;
+  string prompt_snapshot = 6;
+  string raw_response_json = 7;
+  // 1 成功，2 部分成功，3 失败。
+  int32 status = 8;
+  // 1 未知，2 正向，3 中性，4 负向。
+  int32 dominant_sentiment = 9;
+  double confidence = 10;
+  string error_message = 11;
+  repeated SalesDiagnosisEntityMention entity_mentions = 12;
+  repeated SalesDiagnosisClaimMatch claim_matches = 13;
+  // 目标品牌是否进入本次回答。
+  bool included = 14;
+  // 品牌信息完整度，范围 0 到 1。
+  double completeness_score = 15;
+  // 回答质量评分，范围 0 到 1。
+  double answer_quality_score = 16;
+  // 内容时效性评分，范围 0 到 1。
+  double freshness_score = 17;
+  // 回答是否提供了可判断时效性的证据。
+  bool freshness_available = 18;
+  // 目标品牌明确推荐位次；零表示回答没有明确排序。
+  int32 recommendation_position = 19;
+  // 回答事实摘要。
+  string answer_summary = 20;
+  // 回答中的优势表现。
+  string strengths = 21;
+  // 回答中的待优化点。
+  string gaps = 22;
+}
+
+// 模型回答中的竞品提及。
+message SalesDiagnosisCompetitorMention {
+  // 唯一编号。
+  uint64 id = 1;
+  // 竞品名称。
+  string competitor_name = 2;
+  // 在回答中的首次出现位置；零表示未计算。
+  int32 position = 3;
+}
+
+// 一次模型调用结果；每次重试都会新增记录。
+message SalesDiagnosisResult {
+  // 唯一编号。
+  uint64 id = 1;
+  // 尝试次数。
+  uint32 attempt_no = 2;
+  // 是否成功。
+  bool succeeded = 3;
+  // 模型原始回答正文。
+  string answer = 4;
+  // 第三方原始响应 JSON，仅用于审计和问题排查。
+  string raw_response_json = 5;
+  // 提供商请求编号。
+  string provider_request_id = 6;
+  // 实际响应模型。
+  string response_model = 7;
+  // 本次调用使用的完整提示词快照。
+  string prompt_snapshot = 20;
+  // 证据类型。
+  SalesDiagnosisEvidenceType evidence_type = 8;
+  // 输入 Token 数。
+  uint64 input_tokens = 9;
+  // 输出 Token 数。
+  uint64 output_tokens = 10;
+  // 成本，单位为百万分之一货币单位。
+  int64 cost_micros = 11;
+  // 调用耗时，单位毫秒。
+  uint64 duration_ms = 12;
+  // 是否提及目标品牌。
+  bool brand_mentioned = 13;
+  // 品牌在回答中的首次出现位置；零表示未出现。
+  int32 brand_position = 14;
+  // 失败错误码。
+  string error_code = 15;
+  // 失败错误信息。
+  string error_message = 16;
+  // 引用列表。
+  repeated SalesDiagnosisCitation citations = 17;
+  // 竞品提及列表。
+  repeated SalesDiagnosisCompetitorMention competitor_mentions = 18;
+  // 结果创建时间。
+  google.protobuf.Timestamp created_at = 19;
+  // 对该原始回答执行的最新结构分析及证据。
+  SalesDiagnosisResultAnalysis analysis = 21;
+}
+
+// 一个问题在一个模型上的独立任务。
+message SalesDiagnosisTask {
+  // 唯一编号。
+  uint64 id = 1;
+  // 问题编号。
+  uint64 question_id = 2;
+  // 诊断模型编号。
+  uint64 diagnosis_model_id = 3;
+  // 任务状态。
+  SalesDiagnosisTaskStatus status = 4;
+  // 已尝试次数。
+  uint32 attempt_count = 5;
+  // 最近错误码。
+  string last_error_code = 6;
+  // 最近错误信息。
+  string last_error_message = 7;
+  // 开始时间。
+  google.protobuf.Timestamp started_at = 8;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 9;
+  // 历史调用结果，按尝试次数升序。
+  repeated SalesDiagnosisResult results = 10;
+}
+
+// 由后端确定性计算的诊断指标。
+message SalesDiagnosisMetric {
+  // 唯一编号。
+  uint64 id = 1;
+  // 诊断模型编号；零表示全部模型汇总。
+  uint64 diagnosis_model_id = 2;
+  // 指标代码，例如 brand_mention_rate、citation_rate。
+  string metric_code = 3;
+  // 分子。
+  int64 numerator = 4;
+  // 分母。
+  int64 denominator = 5;
+  // 指标值。
+  double value = 6;
+  // 样本量。
+  uint32 sample_count = 7;
+  // 可用状态：1 可用，2 不可用，3 部分可用。
+  int32 availability_status = 8;
+  // 指标计算规则版本。
+  string rule_version = 9;
+  // 逐个不可变回答的计算血缘。
+  repeated SalesDiagnosisMetricSample samples = 10;
+}
+
+// 一个指标对一条不可变模型回答的分子、分母贡献。
+message SalesDiagnosisMetricSample {
+  uint64 id = 1;
+  uint64 result_id = 2;
+  double numerator_value = 3;
+  double denominator_value = 4;
+  bool eligible = 5;
+  string reason = 6;
+}
+
+// 诊断报告中一个模型的统一指标结果。
+message SalesDiagnosisReportModel {
+  // 唯一编号。
+  uint64 id = 1;
+  // 本次诊断模型编号。
+  uint64 diagnosis_model_id = 2;
+  // 模型展示名称快照。
+  string model_name = 3;
+  // 任务样本数。
+  uint32 sample_count = 4;
+  // 成功样本数。
+  uint32 succeeded_count = 5;
+  // 失败样本数。
+  uint32 failed_count = 6;
+  // 品牌提及率。
+  double brand_mention_rate = 7;
+  // 可核验引用率。
+  double citation_rate = 8;
+  // 品牌声量占比。
+  double brand_share_of_voice = 9;
+  // 模型表现摘要。
+  string summary = 10;
+  // 排序值。
+  int32 sort_order = 11;
+  // 目标品牌累计提及次数。
+  uint32 mention_count = 12;
+  // 明确排名样本中的 TOP3 占比。
+  double top3_rate = 13;
+  bool top3_available = 14;
+  // 对冻结官方事实的采纳率。
+  double content_adoption_rate = 15;
+  bool content_adoption_available = 16;
+  // 当前模型是否具备可核验引用率计算条件。
+  bool citation_available = 17;
+  uint32 positive_count = 18;
+  uint32 neutral_count = 19;
+  uint32 negative_count = 20;
+  uint32 unknown_sentiment_count = 21;
+  // 平台回答中目标品牌被收录的比例。
+  double inclusion_rate = 22;
+  // 平台平均信息完整度。
+  double completeness_score = 23;
+  // 平台平均回答质量。
+  double answer_quality_score = 24;
+  // 平台平均明确推荐位次。
+  double average_recommendation_position = 25;
+  // 是否存在可计算的明确推荐位次。
+  bool recommendation_position_available = 26;
+  // 有时效性证据样本的平均达标率。
+  double timeliness_rate = 27;
+  // 是否存在可判断时效性的样本。
+  bool timeliness_available = 28;
+  // 平台综合评级。
+  string overall_rating = 29;
+  // 平台优势表现摘要。
+  string strengths = 30;
+  // 平台待优化点摘要。
+  string gaps = 31;
+  // GEO 视角的平台诊断结论。
+  string diagnosis_conclusion = 32;
+}
+
+// 报告中的品牌或竞品聚合表现，可下钻到回答实体证据。
+message SalesDiagnosisReportEntity {
+  uint64 id = 1;
+  // 零表示全部模型汇总。
+  uint64 diagnosis_model_id = 2;
+  int32 entity_type = 3;
+  string entity_name = 4;
+  uint32 mention_count = 5;
+  double mention_rate = 6;
+  double average_rank = 7;
+  uint32 top3_count = 8;
+  uint32 positive_count = 9;
+  uint32 neutral_count = 10;
+  uint32 negative_count = 11;
+  int32 sort_order = 12;
+  // 构成本聚合结果的不可变实体提及证据编号。
+  repeated uint64 evidence_mention_ids = 13;
+  // 竞品层级：0 非竞品，1 一级直接竞品，2 二级间接竞品。
+  int32 competitor_level = 14;
+  // 威胁等级：0 不适用，1 低，2 中，3 高，4 极高。
+  int32 threat_level = 15;
+  // 竞品地理位置；未采集时为空。
+  string location = 16;
+  // 基于真实回答证据提炼的推荐理由。
+  string recommendation_reason = 17;
+}
+
+// 报告中的真实信源域名分布。
+message SalesDiagnosisReportSource {
+  uint64 id = 1;
+  // 零表示全部模型汇总。
+  uint64 diagnosis_model_id = 2;
+  string domain = 3;
+  string source_name = 4;
+  uint32 citation_count = 5;
+  double share_rate = 6;
+  int32 sort_order = 7;
+  // 构成本信源聚合的真实引用记录编号。
+  repeated uint64 citation_ids = 8;
+  // 来源归属：1 第三方/未知，2 目标品牌官网，3 已配置竞品官网。
+  int32 ownership_type = 9;
+  // 信源类型：1 其他，2 官方，3 百科，4 新闻资讯，5 行业垂类，6 社区UGC，7 攻略游记，8 OTA票务，9 文库资料。
+  int32 source_type = 10;
+}
+
+// 诊断报告引用的一个模型回答。
+message SalesDiagnosisReportAnswer {
+  // 唯一编号。
+  uint64 id = 1;
+  // 不可变调用结果编号。
+  uint64 result_id = 2;
+  // 本次诊断模型编号。
+  uint64 diagnosis_model_id = 3;
+  // 模型展示名称快照。
+  string model_name = 4;
+  // 回答摘要；完整回答仍在任务历史中。
+  string answer_excerpt = 5;
+  // 是否提及目标品牌。
+  bool brand_mentioned = 6;
+  // 证据类型。
+  SalesDiagnosisEvidenceType evidence_type = 7;
+  // 排序值。
+  int32 sort_order = 8;
+}
+
+// 诊断报告中一个问题的跨模型汇总。
+message SalesDiagnosisReportQuestion {
+  // 唯一编号。
+  uint64 id = 1;
+  // 诊断问题编号。
+  uint64 question_id = 2;
+  // 问题正文快照。
+  string question = 3;
+  // 成功回答模型数。
+  uint32 successful_model_count = 4;
+  // 失败模型数。
+  uint32 failed_model_count = 5;
+  // 提及目标品牌的模型数。
+  uint32 brand_mentioned_model_count = 6;
+  // 提及已配置竞品的模型数。
+  uint32 competitor_mentioned_model_count = 7;
+  // 跨模型汇总说明。
+  string summary = 8;
+  // 排序值。
+  int32 sort_order = 9;
+  // 各模型最新有效回答摘要。
+  repeated SalesDiagnosisReportAnswer answers = 10;
+}
+
+// 诊断报告中的问题、机会或建议。
+message SalesDiagnosisReportFinding {
+  // 唯一编号。
+  uint64 id = 1;
+  // 发现类型。
+  SalesDiagnosisReportFindingType type = 2;
+  // 严重程度。
+  SalesDiagnosisReportSeverity severity = 3;
+  // 标题。
+  string title = 4;
+  // 内容。
+  string content = 5;
+  // 排序值。
+  int32 sort_order = 6;
+  // 所属章节：internal_gap、external_gap、optimization、summary。
+  string section_code = 7;
+  // 优先级：0 P0，1 P1，2 P2，3 P3。
+  int32 priority = 8;
+  // 影响程度：1 低，2 中，3 高。
+  int32 impact_level = 9;
+  // 紧迫程度：1 低，2 中，3 高。
+  int32 urgency_level = 10;
+}
+
+// 汇总全部模型最新有效结果的统一诊断报告。
+message SalesDiagnosisReport {
+  // 唯一编号。
+  uint64 id = 1;
+  // 报告状态。
+  SalesDiagnosisReportStatus status = 2;
+  // 固定模板代码。
+  string template_code = 3;
+  // 固定模板版本。
+  uint32 template_version = 4;
+  // 报告标题。
+  string title = 5;
+  // 执行摘要。
+  string executive_summary = 6;
+  // 综合结论。
+  string overall_conclusion = 7;
+  // 诊断方法说明。
+  string methodology = 8;
+  // 数据免责声明。
+  string disclaimer = 9;
+  // 各模型统一指标结果。
+  repeated SalesDiagnosisReportModel models = 10;
+  // 各问题跨模型汇总。
+  repeated SalesDiagnosisReportQuestion questions = 11;
+  // 问题、机会和建议。
+  repeated SalesDiagnosisReportFinding findings = 12;
+  // 报告生成时间。
+  google.protobuf.Timestamp generated_at = 13;
+  // 报告版本。
+  uint64 version = 14;
+  // 品牌与竞品排名、提及和情感聚合。
+  repeated SalesDiagnosisReportEntity entities = 15;
+  // 提供商真实返回的信源分布。
+  repeated SalesDiagnosisReportSource sources = 16;
+}
+
+// 一次独立售前诊断。
+message SalesDiagnosis {
+  // 唯一编号。
+  uint64 id = 1;
+  // 诊断编号。
+  string code = 2;
+  // 诊断名称。
+  string name = 3;
+  // 诊断对象类型。
+  SalesDiagnosisSubjectType subject_type = 4;
+  // 销售机会编号。
+  uint64 opportunity_id = 5;
+  // 企业编号。
+  uint64 enterprise_id = 6;
+  // 发起人平台账号编号。
+  uint64 created_by_admin_id = 7;
+  // 发起人名称。
+  string created_by_display_name = 8;
+  // 诊断状态。
+  SalesDiagnosisStatus status = 9;
+  // 问题数量。
+  uint32 question_count = 10;
+  // 模型数量。
+  uint32 model_count = 11;
+  // 任务总数。
+  uint32 task_count = 12;
+  // 成功任务数。
+  uint32 succeeded_task_count = 13;
+  // 失败任务数。
+  uint32 failed_task_count = 14;
+  // 客户资料快照。
+  SalesDiagnosisProfile profile = 15;
+  // 问题列表。
+  repeated SalesDiagnosisQuestion questions = 16;
+  // 模型列表。
+  repeated SalesDiagnosisModel models = 17;
+  // 任务列表。
+  repeated SalesDiagnosisTask tasks = 18;
+  // 指标列表。
+  repeated SalesDiagnosisMetric metrics = 19;
+  // 开始时间。
+  google.protobuf.Timestamp started_at = 20;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 21;
+  // 数据版本号。
+  uint64 version = 22;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 23;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 24;
+  // 全部任务结束后由后台统一生成的诊断报告。
+  SalesDiagnosisReport report = 25;
+  // 逐平台采样前的品牌词与问题准备阶段。
+  SalesDiagnosisPreparation preparation = 26;
+  // 前置研究生成并用于后续主体辨识的结构化品牌相关词。
+  repeated SalesDiagnosisBrandTerm brand_terms = 27;
+}
+
+// 创建售前诊断请求参数。
+message CreateSalesDiagnosisRequest {
+  // 诊断名称。
+  string name = 1;
+  // 诊断对象类型。
+  SalesDiagnosisSubjectType subject_type = 2;
+  // 销售机会编号；对象为销售机会时必填。
+  uint64 opportunity_id = 3;
+  // 企业编号；对象为企业时必填。
+  uint64 enterprise_id = 4;
+  // 可选诊断问题；留空时后台先调用一个已选模型生成品牌词和相关问题，传入时自动去重后最多 50 条。
+  repeated string questions = 5;
+  // 可选编写模型配置编号；留空时自动选择全部已启用“售前诊断”用途的模型。
+  repeated uint64 writing_model_ids = 6;
+  // 创建后是否立即执行。
+  bool start_immediately = 7;
+  // 客户企业名称；快速品牌诊断时必填。
+  string customer_name = 8;
+  // 品牌名称；快速品牌诊断时必填。
+  string brand_name = 9;
+}
+
+// 获取售前诊断请求参数。
+message GetSalesDiagnosisRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询售前诊断列表请求参数。
+message ListSalesDiagnosesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 搜索诊断编号、名称、客户或品牌。
+  string keyword = 3;
+  // 诊断状态；零表示全部。
+  SalesDiagnosisStatus status = 4;
+  // 诊断对象类型；零表示全部。
+  SalesDiagnosisSubjectType subject_type = 5;
+  // 销售机会编号。
+  uint64 opportunity_id = 6;
+  // 企业编号。
+  uint64 enterprise_id = 7;
+}
+
+// 查询售前诊断列表响应结果。
+message ListSalesDiagnosesReply {
+  // 数据列表。
+  repeated SalesDiagnosis items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 将售前诊断提交到后台执行队列的请求参数。
+message RunSalesDiagnosisRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+
+// 取消售前诊断请求参数。
+message CancelSalesDiagnosisRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 取消原因。
+  string reason = 3;
+}
+
+// 重试诊断任务请求参数。
+message RetrySalesDiagnosisTaskRequest {
+  // 失败任务编号。
+  uint64 task_id = 1;
+  // 重试原因。
+  string reason = 2;
+}
+
+// 对比两次诊断请求参数。
+message CompareSalesDiagnosesRequest {
+  // 基线诊断编号。
+  uint64 baseline_id = 1;
+  // 对比诊断编号。
+  uint64 comparison_id = 2;
+}
+
+// 一个指标的前后变化。
+message SalesDiagnosisMetricComparison {
+  // 指标代码。
+  string metric_code = 1;
+  // 基线值。
+  double baseline_value = 2;
+  // 对比值。
+  double comparison_value = 3;
+  // 变化值。
+  double delta = 4;
+  // 基线样本量。
+  uint32 baseline_sample_count = 5;
+  // 对比样本量。
+  uint32 comparison_sample_count = 6;
+}
+
+// 对比两次诊断响应结果。
+message CompareSalesDiagnosesReply {
+  // 基线诊断。
+  SalesDiagnosis baseline = 1;
+  // 对比诊断。
+  SalesDiagnosis comparison = 2;
+  // 汇总指标变化。
+  repeated SalesDiagnosisMetricComparison metrics = 3;
+}

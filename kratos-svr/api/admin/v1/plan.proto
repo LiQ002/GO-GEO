@@ -1,0 +1,152 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 套餐服务。
+service PlanService {
+  // 创建套餐。
+  rpc CreatePlan(CreatePlanRequest) returns (Plan) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建套餐"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/plans"
+      body: "*"
+    };
+  }
+  // 获取套餐。
+  rpc GetPlan(GetPlanRequest) returns (Plan) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取套餐"};
+    option (google.api.http) = {get: "/api/admin/v1/plans/{id}"};
+  }
+  // 查询计划列表。
+  rpc ListPlans(ListPlansRequest) returns (ListPlansReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询计划列表"};
+    option (google.api.http) = {get: "/api/admin/v1/plans"};
+  }
+  // 更新套餐。
+  rpc UpdatePlan(UpdatePlanRequest) returns (Plan) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新套餐"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/plans/{plan.id}"
+      body: "*"
+    };
+  }
+  // 删除套餐。
+  rpc DeletePlan(DeletePlanRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除套餐"};
+    option (google.api.http) = {delete: "/api/admin/v1/plans/{id}"};
+  }
+}
+
+// 套餐数据。
+message Plan {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 状态。
+  int32 status = 4;
+  reserved 5, 6;
+  reserved "limits_json", "features_json";
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 7;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 8;
+  // 限制列表。
+  repeated PlanLimit limits = 9;
+  // 功能列表。
+  repeated PlanFeature features = 10;
+  // 套餐描述。
+  string description = 11;
+  // 半年价（分）。
+  int64 half_yearly_price_minor_units = 12;
+  // 年价（分）。
+  int64 yearly_price_minor_units = 13;
+  // 货币代码。
+  string currency = 14;
+  // 计费周期。
+  string billing_cycle = 15;
+  // 是否在企业工作台可见。
+  bool visible_to_enterprise = 16;
+  // 排序权重。
+  int32 sort_order = 17;
+  // 系列分组编码。
+  string series_code = 18;
+  // 赠送点数（毫点）。
+  int64 granted_points = 19;
+}
+
+// 套餐额度数据。
+message PlanLimit {
+  // 唯一编号。
+  uint64 id = 1;
+  // 套餐编号。
+  uint64 plan_id = 2;
+  // 指标。
+  int32 metric = 3;
+  // 上限值。
+  int64 limit_value = 4;
+  // 周期。
+  int32 period = 5;
+}
+
+// 套餐功能数据。
+message PlanFeature {
+  // 唯一编号。
+  uint64 id = 1;
+  // 套餐编号。
+  uint64 plan_id = 2;
+  // 功能。
+  int32 feature = 3;
+  // 是否启用。
+  bool enabled = 4;
+}
+
+// 创建套餐请求参数。
+message CreatePlanRequest {
+  // 套餐。
+  Plan plan = 1;
+}
+// 获取套餐请求参数。
+message GetPlanRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询计划列表请求参数。
+message ListPlansRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 搜索关键词。
+  string keyword = 4;
+}
+// 查询计划列表响应结果。
+message ListPlansReply {
+  // 数据列表。
+  repeated Plan items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新套餐请求参数。
+message UpdatePlanRequest {
+  // 套餐。
+  Plan plan = 1;
+}
+// 删除套餐请求参数。
+message DeletePlanRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}

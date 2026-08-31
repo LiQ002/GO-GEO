@@ -1,0 +1,205 @@
+syntax = "proto3";
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// 关键词服务。
+service KeywordService {
+  // 创建关键词。
+  rpc CreateKeyword(CreateKeywordRequest) returns (Keyword) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建关键词"};
+    option (google.api.http) = {
+      post: "/api/user/v1/keywords"
+      body: "*"
+    };
+  }
+  // 获取关键词。
+  rpc GetKeyword(GetKeywordRequest) returns (Keyword) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取关键词"};
+    option (google.api.http) = {get: "/api/user/v1/keywords/{id}"};
+  }
+  // 查询关键词列表。
+  rpc ListKeywords(ListKeywordsRequest) returns (ListKeywordsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询关键词列表"};
+    option (google.api.http) = {get: "/api/user/v1/keywords"};
+  }
+  // 更新关键词。
+  rpc UpdateKeyword(UpdateKeywordRequest) returns (Keyword) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新关键词"};
+    option (google.api.http) = {
+      put: "/api/user/v1/keywords/{keyword.id}"
+      body: "*"
+    };
+  }
+  // 删除关键词。
+  rpc DeleteKeyword(DeleteKeywordRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除关键词"};
+    option (google.api.http) = {delete: "/api/user/v1/keywords/{id}"};
+  }
+  // 为关键词蒸馏问题。
+  rpc DistillKeywordQuestions(DistillKeywordQuestionsRequest) returns (KeywordDistillationTask) {
+    option (gnostic.openapi.v3.operation) = {summary: "蒸馏关键词问题"};
+    option (google.api.http) = {
+      post: "/api/user/v1/keywords/{keyword_id}:distill"
+      body: "*"
+    };
+  }
+  // 查询蒸馏任务列表。
+  rpc ListKeywordDistillations(ListKeywordDistillationsRequest) returns (ListKeywordDistillationsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询关键词蒸馏任务"};
+    option (google.api.http) = {get: "/api/user/v1/keyword-distillations"};
+  }
+  // 重试失败的蒸馏任务。
+  rpc RetryKeywordDistillation(RetryKeywordDistillationRequest) returns (KeywordDistillationTask) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试关键词蒸馏任务"};
+    option (google.api.http) = {
+      post: "/api/user/v1/keyword-distillations/{id}:retry"
+      body: "*"
+    };
+  }
+}
+// 关键词数据。
+message Keyword {
+  // 唯一编号。
+  uint64 id = 1;
+  // 品牌编号。
+  uint64 brand_id = 2;
+  // 文本。
+  string text = 3;
+  // 标签 JSON。
+  string tags_json = 4;
+  // 任务优先级。
+  int32 priority = 5;
+  // 状态。
+  string status = 6;
+  // 来源。
+  string source = 7;
+  // 数据版本号。
+  uint64 version = 8;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 9;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 10;
+  // 可选区域，例如“北京”。
+  string region = 11;
+  // 最近一次请求蒸馏的问题数量。
+  uint32 requested_question_count = 12;
+  // 最近一次成功蒸馏的问题数量。
+  uint32 distilled_question_count = 13;
+  // 蒸馏状态：1待执行、2执行中、3已完成、4失败。
+  int32 distillation_status = 14;
+  // 最近一次蒸馏任务编号。
+  uint64 last_distillation_task_id = 15;
+  // 最近一次蒸馏错误。
+  string distillation_error = 16;
+}
+// 创建关键词请求参数。
+message CreateKeywordRequest {
+  // 搜索关键词。
+  Keyword keyword = 1;
+  // 创建后立即蒸馏的问题数量，1-20。
+  uint32 distill_question_count = 2;
+  // 指定问题蒸馏模型；为 0 时自动选择企业可用模型。
+  uint64 writing_model_id = 3;
+  // 客户端幂等编号。
+  string client_request_id = 4;
+}
+
+// 蒸馏关键词问题请求参数。
+message DistillKeywordQuestionsRequest {
+  // 关键词编号。
+  uint64 keyword_id = 1;
+  // 期望问题数量，1-20。
+  uint32 question_count = 2;
+  // 可选区域；为空时沿用关键词区域。
+  string region = 3;
+  // 指定模型；为 0 时自动选择企业可用的问题蒸馏模型。
+  uint64 writing_model_id = 4;
+  // 客户端幂等编号。
+  string client_request_id = 5;
+}
+
+// 关键词问题蒸馏任务。
+message KeywordDistillationTask {
+  uint64 id = 1;
+  uint64 keyword_id = 2;
+  uint64 brand_id = 3;
+  uint64 writing_model_id = 4;
+  uint64 writing_model_version = 5;
+  string client_request_id = 6;
+  // 1待执行、2执行中、3已完成、4失败。
+  int32 status = 7;
+  string region = 8;
+  uint32 requested_count = 9;
+  string output_json = 10;
+  uint64 input_tokens = 11;
+  uint64 output_tokens = 12;
+  int64 cost_micros = 13;
+  string error_code = 14;
+  string error_message = 15;
+  uint32 attempt_count = 16;
+  google.protobuf.Timestamp started_at = 17;
+  google.protobuf.Timestamp completed_at = 18;
+  google.protobuf.Timestamp created_at = 19;
+  google.protobuf.Timestamp updated_at = 20;
+}
+
+message ListKeywordDistillationsRequest {
+  int32 page_size = 1;
+  string page_token = 2;
+  uint64 keyword_id = 3;
+  int32 status = 4;
+}
+
+message ListKeywordDistillationsReply {
+  repeated KeywordDistillationTask items = 1;
+  string next_page_token = 2;
+  int64 total_size = 3;
+}
+
+message RetryKeywordDistillationRequest {
+  uint64 id = 1;
+}
+// 获取关键词请求参数。
+message GetKeywordRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询关键词列表请求参数。
+message ListKeywordsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 品牌编号。
+  uint64 brand_id = 3;
+  // 状态。
+  string status = 4;
+  // 搜索关键词。
+  string keyword = 5;
+}
+// 查询关键词列表响应结果。
+message ListKeywordsReply {
+  // 数据列表。
+  repeated Keyword items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新关键词请求参数。
+message UpdateKeywordRequest {
+  // 搜索关键词。
+  Keyword keyword = 1;
+}
+// 删除关键词请求参数。
+message DeleteKeywordRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}

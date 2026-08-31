@@ -1,0 +1,100 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+// 运行告警服务。
+service AlertService {
+  // 查询告警列表。
+  rpc ListAlerts(ListAlertsRequest) returns (ListAlertsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询告警列表"};
+    option (google.api.http) = {get: "/api/admin/v1/alerts"};
+  }
+  // 获取运行告警。
+  rpc GetAlert(GetAlertRequest) returns (Alert) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取运行告警"};
+    option (google.api.http) = {get: "/api/admin/v1/alerts/{id}"};
+  }
+  // 处理运行告警。
+  rpc ResolveAlert(ResolveAlertRequest) returns (Alert) {
+    option (gnostic.openapi.v3.operation) = {summary: "处理运行告警"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/alerts/{id}/resolve"
+      body: "*"
+    };
+  }
+}
+// 运行告警数据。
+message Alert {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  optional uint64 enterprise_id = 2;
+  // 企业名称。
+  string enterprise_name = 3;
+  // 告警类型。
+  string alert_type = 4;
+  // 严重程度。
+  string severity = 5;
+  // 状态。
+  string status = 6;
+  // 标题。
+  string title = 7;
+  // 说明。
+  string description = 8;
+  // 资源类型。
+  string resource_type = 9;
+  // 资源编号。
+  string resource_id = 10;
+  // 详细信息 JSON。
+  string details_json = 11;
+  // 处理完成时间。
+  google.protobuf.Timestamp resolved_at = 12;
+  // 已处理处理人。
+  optional uint64 resolved_by = 13;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 14;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 15;
+}
+// 查询告警列表请求参数。
+message ListAlertsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  optional uint64 enterprise_id = 3;
+  // 严重程度。
+  string severity = 4;
+  // 状态。
+  string status = 5;
+  // 告警类型。
+  string alert_type = 6;
+  // 搜索关键词。
+  string keyword = 7;
+}
+// 查询告警列表响应结果。
+message ListAlertsReply {
+  // 数据列表。
+  repeated Alert items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取运行告警请求参数。
+message GetAlertRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 处理运行告警请求参数。
+message ResolveAlertRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 操作原因。
+  string reason = 2;
+}

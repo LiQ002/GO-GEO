@@ -1,0 +1,289 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 知识服务。
+service KnowledgeService {
+  // 创建知识库。
+  rpc CreateKnowledgeBase(CreateKnowledgeBaseRequest) returns (KnowledgeBase) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建知识库"};
+    option (google.api.http) = {
+      post: "/api/user/v1/knowledge-bases"
+      body: "*"
+    };
+  }
+  // 获取知识库。
+  rpc GetKnowledgeBase(GetKnowledgeBaseRequest) returns (KnowledgeBase) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取知识库"};
+    option (google.api.http) = {get: "/api/user/v1/knowledge-bases/{id}"};
+  }
+  // 查询知识库列表。
+  rpc ListKnowledgeBases(ListKnowledgeBasesRequest) returns (ListKnowledgeBasesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询知识库列表"};
+    option (google.api.http) = {get: "/api/user/v1/knowledge-bases"};
+  }
+  // 更新知识库。
+  rpc UpdateKnowledgeBase(UpdateKnowledgeBaseRequest) returns (KnowledgeBase) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新知识库"};
+    option (google.api.http) = {
+      put: "/api/user/v1/knowledge-bases/{knowledge_base.id}"
+      body: "*"
+    };
+  }
+  // 删除知识库。
+  rpc DeleteKnowledgeBase(DeleteKnowledgeBaseRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除知识库"};
+    option (google.api.http) = {delete: "/api/user/v1/knowledge-bases/{id}"};
+  }
+
+  // 创建知识文档。
+  rpc CreateKnowledgeDocument(CreateKnowledgeDocumentRequest) returns (KnowledgeDocument) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建知识文档"};
+    option (google.api.http) = {
+      post: "/api/user/v1/knowledge-documents"
+      body: "*"
+    };
+  }
+  // 获取知识文档。
+  rpc GetKnowledgeDocument(GetKnowledgeDocumentRequest) returns (KnowledgeDocument) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取知识文档"};
+    option (google.api.http) = {get: "/api/user/v1/knowledge-documents/{id}"};
+  }
+  // 查询知识文档列表。
+  rpc ListKnowledgeDocuments(ListKnowledgeDocumentsRequest) returns (ListKnowledgeDocumentsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询知识文档列表"};
+    option (google.api.http) = {get: "/api/user/v1/knowledge-documents"};
+  }
+  // 更新知识文档。
+  rpc UpdateKnowledgeDocument(UpdateKnowledgeDocumentRequest) returns (KnowledgeDocument) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新知识文档"};
+    option (google.api.http) = {
+      put: "/api/user/v1/knowledge-documents/{document.id}"
+      body: "*"
+    };
+  }
+  // 删除知识文档。
+  rpc DeleteKnowledgeDocument(DeleteKnowledgeDocumentRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除知识文档"};
+    option (google.api.http) = {delete: "/api/user/v1/knowledge-documents/{id}"};
+  }
+  // 重试知识文档解析。
+  rpc RetryKnowledgeDocumentParse(RetryKnowledgeDocumentParseRequest) returns (KnowledgeDocument) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试知识文档解析"};
+    option (google.api.http) = {
+      post: "/api/user/v1/knowledge-documents/{id}:retry-parse"
+      body: "*"
+    };
+  }
+  // 查询知识分块列表。
+  rpc ListKnowledgeChunks(ListKnowledgeChunksRequest) returns (ListKnowledgeChunksReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询知识分块列表"};
+    option (google.api.http) = {get: "/api/user/v1/knowledge-documents/{knowledge_document_id}/chunks"};
+  }
+}
+
+// 知识库数据。
+message KnowledgeBase {
+  // 唯一编号。
+  uint64 id = 1;
+  // 名称。
+  string name = 2;
+  // 说明。
+  string description = 3;
+  // 状态。
+  int32 status = 4;
+  // 数据版本号。
+  uint64 version = 5;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 6;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 7;
+}
+
+// 知识文档数据。
+message KnowledgeDocument {
+  // 唯一编号。
+  uint64 id = 1;
+  // 知识库编号。
+  uint64 knowledge_base_id = 2;
+  // 标题。
+  string title = 3;
+  // 来源类型。
+  int32 source_type = 4;
+  // 来源地址。
+  string source_url = 5;
+  // 对象键名。
+  string object_key = 6;
+  // 内容哈希。
+  string content_hash = 7;
+  // MIME 类型。
+  string mime_type = 8;
+  // 解析状态。
+  int32 parse_status = 9;
+  // 解析错误。
+  string parse_error = 10;
+  // 文档版本。
+  uint32 document_version = 11;
+  // 扩展元数据 JSON。
+  string metadata_json = 12;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 13;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 14;
+  // GEO 内容上下文分类。
+  int32 category = 15;
+  // 用户录入的正文内容。
+  string content = 16;
+}
+
+// 知识分块数据。
+message KnowledgeChunk {
+  // 唯一编号。
+  uint64 id = 1;
+  // 知识文档编号。
+  uint64 knowledge_document_id = 2;
+  // 文档版本。
+  uint32 document_version = 3;
+  // 分块序号。
+  uint32 chunk_index = 4;
+  // 内容。
+  string content = 5;
+  // 内容哈希。
+  string content_hash = 6;
+  // 内容定位信息 JSON。
+  string locator_json = 7;
+  // 扩展元数据 JSON。
+  string metadata_json = 8;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 9;
+}
+
+// 创建知识库请求参数。
+message CreateKnowledgeBaseRequest {
+  // 知识库。
+  KnowledgeBase knowledge_base = 1;
+}
+// 获取知识库请求参数。
+message GetKnowledgeBaseRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询知识库列表请求参数。
+message ListKnowledgeBasesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 搜索关键词。
+  string keyword = 4;
+}
+// 查询知识库列表响应结果。
+message ListKnowledgeBasesReply {
+  // 数据列表。
+  repeated KnowledgeBase items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新知识库请求参数。
+message UpdateKnowledgeBaseRequest {
+  // 知识库。
+  KnowledgeBase knowledge_base = 1;
+}
+// 删除知识库请求参数。
+message DeleteKnowledgeBaseRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+
+// 创建知识文档请求参数。
+message CreateKnowledgeDocumentRequest {
+  // 文档。
+  KnowledgeDocument document = 1;
+  // 内容。
+  string content = 2;
+}
+// 获取知识文档请求参数。
+message GetKnowledgeDocumentRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询知识文档列表请求参数。
+message ListKnowledgeDocumentsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 知识库编号。
+  uint64 knowledge_base_id = 3;
+  // 来源类型。
+  int32 source_type = 4;
+  // 解析状态。
+  int32 parse_status = 5;
+  // 搜索关键词。
+  string keyword = 6;
+  // GEO 内容上下文分类。
+  int32 category = 7;
+}
+// 查询知识文档列表响应结果。
+message ListKnowledgeDocumentsReply {
+  // 数据列表。
+  repeated KnowledgeDocument items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新知识文档请求参数。
+message UpdateKnowledgeDocumentRequest {
+  // 文档。
+  KnowledgeDocument document = 1;
+  // 内容。
+  string content = 2;
+}
+// 删除知识文档请求参数。
+message DeleteKnowledgeDocumentRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 文档版本。
+  uint32 document_version = 2;
+}
+// 重试知识文档解析请求参数。
+message RetryKnowledgeDocumentParseRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 文档版本。
+  uint32 document_version = 2;
+}
+// 查询知识分块列表请求参数。
+message ListKnowledgeChunksRequest {
+  // 知识文档编号。
+  uint64 knowledge_document_id = 1;
+  // 文档版本。
+  uint32 document_version = 2;
+  // 每页记录数。
+  int32 page_size = 3;
+  // 分页令牌。
+  string page_token = 4;
+}
+// 查询知识分块列表响应结果。
+message ListKnowledgeChunksReply {
+  // 数据列表。
+  repeated KnowledgeChunk items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}

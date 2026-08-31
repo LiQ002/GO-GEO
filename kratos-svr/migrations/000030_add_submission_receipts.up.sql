@@ -1,0 +1,23 @@
+CREATE TABLE IF NOT EXISTS pub_submission_receipts (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    enterprise_id BIGINT UNSIGNED NOT NULL,
+    publish_task_id BIGINT UNSIGNED NOT NULL,
+    receipt_type VARCHAR(32) NOT NULL,
+    receipt_code VARCHAR(255),
+    status VARCHAR(32) NOT NULL,
+    submitted_at DATETIME(6),
+    expected_at DATETIME(6),
+    published_at DATETIME(6),
+    published_url VARCHAR(2048),
+    cost_minor_units BIGINT NOT NULL DEFAULT 0,
+    currency CHAR(3),
+    follow_up_json JSON,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    deleted_at DATETIME(6),
+    PRIMARY KEY (id),
+    KEY idx_pub_receipt_task (publish_task_id),
+    KEY idx_pub_receipt_code (receipt_code),
+    KEY idx_pub_receipt_status (status),
+    KEY idx_pub_receipt_tenant (enterprise_id, status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

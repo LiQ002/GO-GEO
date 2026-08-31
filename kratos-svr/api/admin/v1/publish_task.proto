@@ -1,0 +1,225 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 发布任务服务。
+service PublishTaskService {
+  // 查询发布任务列表。
+  rpc ListPublishTasks(ListPublishTasksRequest) returns (ListPublishTasksReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询发布任务列表"};
+    option (google.api.http) = {get: "/api/admin/v1/publish-tasks"};
+  }
+  // 获取发布任务。
+  rpc GetPublishTask(GetPublishTaskRequest) returns (PublishTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取发布任务"};
+    option (google.api.http) = {get: "/api/admin/v1/publish-tasks/{id}"};
+  }
+  // 重试发布任务。
+  rpc RetryPublishTask(PublishTaskActionRequest) returns (PublishTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试发布任务"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/publish-tasks/{id}/retry"
+      body: "*"
+    };
+  }
+  // 取消发布任务。
+  rpc CancelPublishTask(PublishTaskActionRequest) returns (PublishTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "取消发布任务"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/publish-tasks/{id}/cancel"
+      body: "*"
+    };
+  }
+  // 保存投稿回执。
+  rpc SaveSubmissionReceipt(SaveSubmissionReceiptRequest) returns (PublishTaskDetail) {
+    option (gnostic.openapi.v3.operation) = {summary: "保存投稿回执"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/publish-tasks/{task_id}/receipt"
+      body: "*"
+    };
+  }
+}
+
+// 发布任务数据。
+message PublishTask {
+  // 唯一编号。
+  uint64 id = 1;
+  // 企业编号。
+  uint64 enterprise_id = 2;
+  // 企业名称。
+  string enterprise_name = 3;
+  // 发布计划编号。
+  uint64 publish_plan_id = 4;
+  // 发布套餐名称。
+  string publish_plan_name = 5;
+  // 文章快照编号。
+  uint64 article_snapshot_id = 6;
+  // 文章标题。
+  string article_title = 7;
+  // 发布渠道编号。
+  uint64 publish_channel_id = 8;
+  // 发布渠道名称。
+  string publish_channel_name = 9;
+  // 发布目标编号。
+  optional uint64 publish_target_id = 10;
+  // 发布目标名称。
+  string publish_target_name = 11;
+  // 平台账号编号。
+  optional uint64 platform_account_id = 12;
+  // 执行模式。
+  string execution_mode = 13;
+  // 状态。
+  string status = 14;
+  // 任务优先级。
+  int32 priority = 15;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 16;
+  // 下一次重试时间。
+  google.protobuf.Timestamp next_retry_at = 17;
+  // 已尝试次数。
+  uint32 attempt_count = 18;
+  // 最大尝试次数。
+  uint32 max_attempts = 19;
+  // 结果地址。
+  string result_url = 20;
+  // 平台文章编号。
+  string platform_article_id = 21;
+  // 错误分类。
+  string error_category = 22;
+  // 错误编码。
+  string error_code = 23;
+  // 错误信息。
+  string error_message = 24;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 25;
+  // 数据版本号。
+  uint64 version = 26;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 27;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 28;
+}
+
+// 发布尝试数据。
+message PublishAttempt {
+  // 唯一编号。
+  uint64 id = 1;
+  // 尝试序号。
+  uint32 attempt_number = 2;
+  // 工作节点编号。
+  uint64 worker_node_id = 3;
+  // 租约编号。
+  uint64 lease_id = 4;
+  // 状态。
+  string status = 5;
+  // 开始时间。
+  google.protobuf.Timestamp started_at = 6;
+  // 结束时间。
+  google.protobuf.Timestamp finished_at = 7;
+  // 耗时毫秒数。
+  uint64 duration_ms = 8;
+  // 结果数据 JSON。
+  string result_json = 9;
+  // 证据数据 JSON。
+  string evidence_json = 10;
+  // 错误分类。
+  string error_category = 11;
+  // 错误编码。
+  string error_code = 12;
+  // 错误信息。
+  string error_message = 13;
+  // 客户端版本。
+  string client_version = 14;
+}
+
+// 投稿回执数据。
+message SubmissionReceipt {
+  // 唯一编号。
+  uint64 id = 1;
+  // 回执类型。
+  string receipt_type = 2;
+  // 回执编码。
+  string receipt_code = 3;
+  // 状态。
+  string status = 4;
+  // 提交时间。
+  google.protobuf.Timestamp submitted_at = 5;
+  // 期望时间。
+  google.protobuf.Timestamp expected_at = 6;
+  // 发布时间。
+  google.protobuf.Timestamp published_at = 7;
+  // 发布地址。
+  string published_url = 8;
+  // 成本（最小货币单位）。
+  int64 cost_minor_units = 9;
+  // 币种。
+  string currency = 10;
+  // 后续处理信息 JSON。
+  string follow_up_json = 11;
+}
+
+// 发布任务详情数据。
+message PublishTaskDetail {
+  // 任务。
+  PublishTask task = 1;
+  // 尝试记录。
+  repeated PublishAttempt attempts = 2;
+  // 回执。
+  SubmissionReceipt receipt = 3;
+}
+
+// 查询发布任务列表请求参数。
+message ListPublishTasksRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 企业编号。
+  uint64 enterprise_id = 3;
+  // 发布渠道编号。
+  uint64 publish_channel_id = 4;
+  // 状态。
+  string status = 5;
+  // 错误分类。
+  string error_category = 6;
+  // 搜索关键词。
+  string keyword = 7;
+}
+// 查询发布任务列表响应结果。
+message ListPublishTasksReply {
+  // 数据列表。
+  repeated PublishTask items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取发布任务请求参数。
+message GetPublishTaskRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 发布任务操作请求参数。
+message PublishTaskActionRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 保存投稿回执请求参数。
+message SaveSubmissionReceiptRequest {
+  // 任务编号。
+  uint64 task_id = 1;
+  // 回执。
+  SubmissionReceipt receipt = 2;
+  // 操作原因。
+  string reason = 3;
+}

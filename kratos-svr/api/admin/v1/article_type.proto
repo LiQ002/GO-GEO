@@ -1,0 +1,241 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "common/v1/article_type.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 文章类型服务。
+service ArticleTypeService {
+  // 创建文章类型。
+  rpc CreateArticleType(CreateArticleTypeRequest) returns (ArticleType) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建文章类型"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/article-types"
+      body: "*"
+    };
+  }
+  // 获取文章类型。
+  rpc GetArticleType(GetArticleTypeRequest) returns (ArticleType) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取文章类型"};
+    option (google.api.http) = {get: "/api/admin/v1/article-types/{id}"};
+  }
+  // 查询文章类型列表。
+  rpc ListArticleTypes(ListArticleTypesRequest) returns (ListArticleTypesReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询文章类型列表"};
+    option (google.api.http) = {get: "/api/admin/v1/article-types"};
+  }
+  // 更新文章类型。
+  rpc UpdateArticleType(UpdateArticleTypeRequest) returns (ArticleType) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新文章类型"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/article-types/{article_type.id}"
+      body: "*"
+    };
+  }
+  // 删除文章类型。
+  rpc DeleteArticleType(DeleteArticleTypeRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除文章类型"};
+    option (google.api.http) = {delete: "/api/admin/v1/article-types/{id}"};
+  }
+  // 创建文章类型版本（旧客户端兼容；新流程保存文章类型时自动生成修订）。
+  rpc CreateArticleTypeVersion(CreateArticleTypeVersionRequest) returns (ArticleTypeVersion) {
+    option deprecated = true;
+    option (gnostic.openapi.v3.operation) = {summary: "创建文章类型版本"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/article-types/{article_type_id}/versions"
+      body: "*"
+    };
+  }
+  // 查询文章类型版本列表。
+  rpc ListArticleTypeVersions(ListArticleTypeVersionsRequest) returns (ListArticleTypeVersionsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询文章类型版本列表"};
+    option (google.api.http) = {get: "/api/admin/v1/article-types/{article_type_id}/versions"};
+  }
+  // 发布文章类型版本（旧客户端兼容；新流程无需手工发布）。
+  rpc PublishArticleTypeVersion(PublishArticleTypeVersionRequest) returns (ArticleType) {
+    option deprecated = true;
+    option (gnostic.openapi.v3.operation) = {summary: "发布文章类型版本"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/article-types/{article_type_id}/versions/{version_id}/publish"
+      body: "*"
+    };
+  }
+  // 回滚文章类型。
+  rpc RollbackArticleType(RollbackArticleTypeRequest) returns (ArticleType) {
+    option (gnostic.openapi.v3.operation) = {summary: "回滚文章类型"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/article-types/{article_type_id}/rollback"
+      body: "*"
+    };
+  }
+}
+
+// 文章类型数据。
+message ArticleType {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 说明。
+  string description = 4;
+  // 图标地址。
+  string icon = 5;
+  // 来源类型。
+  int32 source_type = 6;
+  // 状态。
+  int32 status = 7;
+  // 是否可见。
+  bool visible = 8;
+  // 排序值。
+  int32 sort_order = 9;
+  // 当前版本编号。
+  uint64 current_version_id = 10;
+  // 可见范围 JSON。
+  string visibility_json = 11;
+  // 数据版本号。
+  uint64 version = 12;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 13;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 14;
+  // 当前生效的结构化生成配置；保存文章类型时由后端自动创建配置修订。
+  common.v1.ArticleTypeConfig config = 15;
+  // 当前配置修订号。
+  uint32 config_revision = 16;
+  // 本次配置变更说明；仅在保存时使用，并记录到自动生成的修订中。
+  string config_change_summary = 17;
+}
+
+// 文章类型版本数据。
+message ArticleTypeVersion {
+  // 唯一编号。
+  uint64 id = 1;
+  // 文章类型编号。
+  uint64 article_type_id = 2;
+  // 版本序号。
+  uint32 version_number = 3;
+  // 状态。
+  int32 status = 4;
+  // 内容目标。
+  string content_goal = 5;
+  // 目标受众。
+  string target_audience = 6;
+  // 语气。
+  string tone = 7;
+  // 建议最小字数。
+  uint32 recommended_min_words = 8;
+  // 建议最大字数。
+  uint32 recommended_max_words = 9;
+  // 文章结构配置 JSON。
+  string structure_json = 10;
+  // 输入参数结构 JSON。
+  string input_schema_json = 11;
+  // GEO 优化规则 JSON。
+  string geo_rules_json = 12;
+  // 质量检查规则 JSON。
+  string quality_rules_json = 13;
+  // 提示词版本编号。
+  uint64 prompt_version_id = 14;
+  // 默认模型编号。
+  uint64 default_model_id = 15;
+  // 备用模型编号列表 JSON。
+  string fallback_model_ids_json = 16;
+  // 变更摘要。
+  string change_summary = 17;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 18;
+  // 该历史修订对应的结构化生成配置。
+  common.v1.ArticleTypeConfig config = 19;
+  // 发布管理员编号。
+  uint64 published_by = 20;
+}
+
+// 创建文章类型请求参数。
+message CreateArticleTypeRequest {
+  // 文章类型。
+  ArticleType article_type = 1;
+}
+// 获取文章类型请求参数。
+message GetArticleTypeRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询文章类型列表请求参数。
+message ListArticleTypesRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  int32 status = 3;
+  // 来源类型。
+  int32 source_type = 4;
+  // 搜索关键词。
+  string keyword = 5;
+  // 是否可见。
+  optional bool visible = 6;
+}
+// 查询文章类型列表响应结果。
+message ListArticleTypesReply {
+  // 数据列表。
+  repeated ArticleType items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新文章类型请求参数。
+message UpdateArticleTypeRequest {
+  // 文章类型。
+  ArticleType article_type = 1;
+}
+// 删除文章类型请求参数。
+message DeleteArticleTypeRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+// 创建文章类型版本请求参数。
+message CreateArticleTypeVersionRequest {
+  // 文章类型编号。
+  uint64 article_type_id = 1;
+  // 数据版本号。
+  ArticleTypeVersion version = 2;
+}
+// 查询文章类型版本列表请求参数。
+message ListArticleTypeVersionsRequest {
+  // 文章类型编号。
+  uint64 article_type_id = 1;
+}
+// 查询文章类型版本列表响应结果。
+message ListArticleTypeVersionsReply {
+  // 数据列表。
+  repeated ArticleTypeVersion items = 1;
+}
+// 发布文章类型版本请求参数。
+message PublishArticleTypeVersionRequest {
+  // 文章类型编号。
+  uint64 article_type_id = 1;
+  // 版本编号。
+  uint64 version_id = 2;
+  // 期望的数据版本号。
+  uint64 expected_version = 3;
+}
+// 回滚文章类型请求参数。
+message RollbackArticleTypeRequest {
+  // 文章类型编号。
+  uint64 article_type_id = 1;
+  // 版本编号。
+  uint64 version_id = 2;
+  // 期望的数据版本号。
+  uint64 expected_version = 3;
+}

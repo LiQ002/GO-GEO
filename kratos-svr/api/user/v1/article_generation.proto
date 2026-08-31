@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+
+// 文章生成服务。
+service ArticleGenerationService {
+  // 创建文章生成。
+  rpc CreateArticleGeneration(CreateArticleGenerationRequest) returns (ArticleGenerationTask) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建文章生成"};
+    option (google.api.http) = {
+      post: "/api/user/v1/article-generations"
+      body: "*"
+    };
+  }
+  // 获取文章生成。
+  rpc GetArticleGeneration(GetArticleGenerationRequest) returns (ArticleGenerationTask) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取文章生成"};
+    option (google.api.http) = {get: "/api/user/v1/article-generations/{id}"};
+  }
+  // 查询文章生成任务列表。
+  rpc ListArticleGenerations(ListArticleGenerationsRequest) returns (ListArticleGenerationsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询文章生成任务列表"};
+    option (google.api.http) = {get: "/api/user/v1/article-generations"};
+  }
+  // 重试文章生成。
+  rpc RetryArticleGeneration(RetryArticleGenerationRequest) returns (ArticleGenerationTask) {
+    option (gnostic.openapi.v3.operation) = {summary: "重试文章生成"};
+    option (google.api.http) = {
+      post: "/api/user/v1/article-generations/{id}:retry"
+      body: "*"
+    };
+  }
+}
+
+// 文章生成任务数据。
+message ArticleGenerationTask {
+  // 唯一编号。
+  uint64 id = 1;
+  // 文章编号。
+  uint64 article_id = 2;
+  // 文章类型版本编号。
+  uint64 article_type_version_id = 3;
+  // 提示词版本编号。
+  uint64 prompt_version_id = 4;
+  // 写作模型编号。
+  uint64 writing_model_id = 5;
+  // 写作模型版本。
+  uint64 writing_model_version = 6;
+  // 客户端请求幂等编号。
+  string client_request_id = 7;
+  // 状态。
+  string status = 8;
+  // 输入参数 JSON。
+  string input_json = 9;
+  // 输出结果 JSON。
+  string output_json = 10;
+  // 输入令牌数。
+  uint64 input_tokens = 11;
+  // 输出令牌数。
+  uint64 output_tokens = 12;
+  // 调用成本（微单位）。
+  int64 cost_micros = 13;
+  // 错误编码。
+  string error_code = 14;
+  // 错误信息。
+  string error_message = 15;
+  // 已尝试次数。
+  uint32 attempt_count = 16;
+  // 结果文章版本编号。
+  uint64 result_article_version_id = 17;
+  // 结果快照编号。
+  uint64 result_snapshot_id = 18;
+  // 开始时间。
+  google.protobuf.Timestamp started_at = 19;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 20;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 21;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 22;
+}
+
+// 创建文章生成请求参数。
+message CreateArticleGenerationRequest {
+  // 客户端请求幂等编号。
+  string client_request_id = 1;
+  // 文章编号。
+  uint64 article_id = 2;
+  // 品牌编号。
+  uint64 brand_id = 3;
+  // 文章类型版本编号。
+  uint64 article_type_version_id = 4;
+  // 写作模型编号。
+  uint64 writing_model_id = 5;
+  // 知识库编号列表。兼容旧客户端；新客户端应使用 knowledge_document_ids 精确选择企业知识。
+  repeated uint64 knowledge_base_ids = 6;
+  // 输入参数 JSON。
+  string input_json = 7;
+  // 用户指令。
+  string user_instruction = 8;
+  // 文章类型编号。后端自动锁定当前配置修订；新客户端应使用该字段。
+  uint64 article_type_id = 9;
+  // 目标关键词编号。
+  uint64 keyword_id = 10;
+  // 目标问题编号；生成标题必须围绕该问题。
+  uint64 question_id = 11;
+  // 本次生成可使用的企业图库相册编号列表。
+  repeated uint64 gallery_album_ids = 12;
+  // 需要随机插入正文的图库图片数量，0 表示不插图，最大 20。
+  uint32 gallery_image_count = 13;
+  // 企业知识条目编号列表，至少选择一个；仅引用已解析内容。
+  repeated uint64 knowledge_document_ids = 14;
+}
+
+// 获取文章生成请求参数。
+message GetArticleGenerationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+
+// 查询文章生成任务列表请求参数。
+message ListArticleGenerationsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  string status = 3;
+  // 文章编号。
+  uint64 article_id = 4;
+}
+
+// 查询文章生成任务列表响应结果。
+message ListArticleGenerationsReply {
+  // 数据列表。
+  repeated ArticleGenerationTask items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+
+// 重试文章生成请求参数。
+message RetryArticleGenerationRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}

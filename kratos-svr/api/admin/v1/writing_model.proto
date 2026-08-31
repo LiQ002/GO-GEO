@@ -1,0 +1,192 @@
+syntax = "proto3";
+
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 写作模型服务。
+service WritingModelService {
+  // 创建写作模型。
+  rpc CreateWritingModel(CreateWritingModelRequest) returns (WritingModel) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建写作模型"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/writing-models"
+      body: "*"
+    };
+  }
+  // 获取写作模型。
+  rpc GetWritingModel(GetWritingModelRequest) returns (WritingModel) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取写作模型"};
+    option (google.api.http) = {get: "/api/admin/v1/writing-models/{id}"};
+  }
+  // 查询写作模型列表。
+  rpc ListWritingModels(ListWritingModelsRequest) returns (ListWritingModelsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询写作模型列表"};
+    option (google.api.http) = {get: "/api/admin/v1/writing-models"};
+  }
+  // 更新写作模型。
+  rpc UpdateWritingModel(UpdateWritingModelRequest) returns (WritingModel) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新写作模型"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/writing-models/{writing_model.id}"
+      body: "*"
+    };
+  }
+  // 删除写作模型。
+  rpc DeleteWritingModel(DeleteWritingModelRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除写作模型"};
+    option (google.api.http) = {delete: "/api/admin/v1/writing-models/{id}"};
+  }
+  // 测试写作模型。
+  rpc TestWritingModel(TestWritingModelRequest) returns (TestWritingModelReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "测试写作模型"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/writing-models/{id}/test"
+      body: "*"
+    };
+  }
+}
+
+// 写作模型数据。
+message WritingModel {
+  // 唯一编号。
+  uint64 id = 1;
+  // 业务编码。
+  string code = 2;
+  // 显示名称。
+  string display_name = 3;
+  // 供应商。
+  int32 provider = 4;
+  // 协议。
+  int32 protocol = 5;
+  // 基础地址。
+  string base_url = 6;
+  // 模型编号。
+  string model_id = 7;
+  // 是否已配置访问凭据。
+  bool credential_configured = 8;
+  // 上下文长度。
+  uint32 context_length = 9;
+  // 状态。
+  int32 status = 10;
+  // 排序值。
+  int32 sort_order = 11;
+  reserved 12, 13, 14, 15, 16;
+  reserved "purposes_json", "parameters_json", "safety_json", "pricing_json", "visibility_json";
+  // 数据版本号。
+  uint64 version = 17;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 18;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 19;
+  // 用途列表。
+  repeated int32 purposes = 20;
+  // 温度参数。
+  double temperature = 21;
+  // Top P 采样参数。
+  double top_p = 22;
+  // 最大令牌数。
+  uint32 max_tokens = 23;
+  // 超时秒数。
+  uint32 timeout_seconds = 24;
+  // 内容安全启用。
+  bool safety_enabled = 25;
+  // 输入审核启用。
+  bool input_moderation_enabled = 26;
+  // 输出审核启用。
+  bool output_moderation_enabled = 27;
+  // 内容安全失败关闭。
+  bool safety_fail_closed = 28;
+  // 拦截内容安全分类列表。
+  repeated int32 blocked_safety_categories = 29;
+  // 每百万输入 Token 的微单位价格。
+  int64 input_price_micros_per_million_tokens = 30;
+  // 每百万输出 Token 的微单位价格。
+  int64 output_price_micros_per_million_tokens = 31;
+  // 价格币种。
+  int32 price_currency = 32;
+  // 访问范围。
+  int32 access_scope = 33;
+  // 可见套餐编号列表。
+  repeated uint64 visible_plan_ids = 34;
+  // 可见企业编号列表。
+  repeated uint64 visible_enterprise_ids = 35;
+  // 信源能力：1 不支持结构化信源，2 接口返回可核验信源元数据。
+  int32 citation_capability = 36;
+  // 售前诊断 API：1 Chat Completions，2 Responses API。
+  int32 diagnosis_api_mode = 37;
+  // 售前诊断是否启用供应商原生联网搜索工具。
+  bool diagnosis_web_search_enabled = 38;
+}
+
+// 创建写作模型请求参数。
+message CreateWritingModelRequest {
+  // 写作模型。
+  WritingModel writing_model = 1;
+  // API 密钥。
+  string api_key = 2;
+}
+// 获取写作模型请求参数。
+message GetWritingModelRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询写作模型列表请求参数。
+message ListWritingModelsRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 供应商。
+  int32 provider = 3;
+  // 状态。
+  int32 status = 4;
+  // 搜索关键词。
+  string keyword = 5;
+}
+// 查询写作模型列表响应结果。
+message ListWritingModelsReply {
+  // 数据列表。
+  repeated WritingModel items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新写作模型请求参数。
+message UpdateWritingModelRequest {
+  // 写作模型。
+  WritingModel writing_model = 1;
+  // 替换用 API Key。
+  string replacement_api_key = 2;
+}
+// 删除写作模型请求参数。
+message DeleteWritingModelRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+}
+// 测试写作模型请求参数。
+message TestWritingModelRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 提示词。
+  string prompt = 2;
+}
+// 测试写作模型响应结果。
+message TestWritingModelReply {
+  // 操作是否成功。
+  bool success = 1;
+  // 响应延迟毫秒数。
+  uint64 latency_ms = 2;
+  // 响应预览。
+  string response_preview = 3;
+  // 错误编码。
+  string error_code = 4;
+}

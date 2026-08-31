@@ -1,0 +1,159 @@
+syntax = "proto3";
+package admin.v1;
+
+import "admin/v1/admin_role.proto";
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+// 平台账号服务。
+service AdminUserService {
+  // 创建平台账号。
+  rpc CreateAdminUser(CreateAdminUserRequest) returns (AdminUser) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建平台账号"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/admin-users"
+      body: "*"
+    };
+  }
+  // 获取平台账号。
+  rpc GetAdminUser(GetAdminUserRequest) returns (AdminUser) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取平台账号"};
+    option (google.api.http) = {get: "/api/admin/v1/admin-users/{id}"};
+  }
+  // 查询平台管理员账号列表。
+  rpc ListAdminUsers(ListAdminUsersRequest) returns (ListAdminUsersReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询平台管理员账号列表"};
+    option (google.api.http) = {get: "/api/admin/v1/admin-users"};
+  }
+  // 更新平台账号。
+  rpc UpdateAdminUser(UpdateAdminUserRequest) returns (AdminUser) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新平台账号"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/admin-users/{user.id}"
+      body: "*"
+    };
+  }
+  // 变更平台管理员用户状态。
+  rpc ChangeAdminUserStatus(ChangeAdminUserStatusRequest) returns (AdminUser) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更平台管理员用户状态"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/admin-users/{id}/status"
+      body: "*"
+    };
+  }
+  // 重置平台管理员用户密码。
+  rpc ResetAdminUserPassword(ResetAdminUserPasswordRequest) returns (AdminUser) {
+    option (gnostic.openapi.v3.operation) = {summary: "重置平台管理员用户密码"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/admin-users/{id}/reset-password"
+      body: "*"
+    };
+  }
+  // 设置平台管理员用户角色列表。
+  rpc SetAdminUserRoles(SetAdminUserRolesRequest) returns (AdminUser) {
+    option (gnostic.openapi.v3.operation) = {summary: "设置平台管理员用户角色列表"};
+    option (google.api.http) = {
+      put: "/api/admin/v1/admin-users/{id}/roles"
+      body: "*"
+    };
+  }
+}
+// 平台账号数据。
+message AdminUser {
+  // 唯一编号。
+  uint64 id = 1;
+  // 登录用户名。
+  string username = 2;
+  // 显示名称。
+  string display_name = 3;
+  // 电子邮箱。
+  string email = 4;
+  // 状态。
+  string status = 5;
+  // 失败登录数量。
+  uint32 failed_login_count = 6;
+  // 锁定截止时间。
+  google.protobuf.Timestamp locked_until = 7;
+  // 最近登录时间。
+  google.protobuf.Timestamp last_login_at = 8;
+  // 角色列表。
+  repeated AdminRole roles = 9;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 10;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 11;
+}
+// 创建平台账号请求参数。
+message CreateAdminUserRequest {
+  // 用户。
+  AdminUser user = 1;
+  // 初始密码。
+  string initial_password = 2;
+  // 角色编号列表。
+  repeated uint64 role_ids = 3;
+  // 操作原因。
+  string reason = 4;
+}
+// 获取平台账号请求参数。
+message GetAdminUserRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询平台管理员账号列表请求参数。
+message ListAdminUsersRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 状态。
+  string status = 3;
+  // 搜索关键词。
+  string keyword = 4;
+  // 角色编号。
+  uint64 role_id = 5;
+}
+// 查询平台管理员账号列表响应结果。
+message ListAdminUsersReply {
+  // 数据列表。
+  repeated AdminUser items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 更新平台账号请求参数。
+message UpdateAdminUserRequest {
+  // 用户。
+  AdminUser user = 1;
+  // 操作原因。
+  string reason = 2;
+}
+// 变更平台管理员用户状态请求参数。
+message ChangeAdminUserStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 操作类型。
+  string action = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 重置平台管理员用户密码请求参数。
+message ResetAdminUserPasswordRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 新密码。
+  string new_password = 2;
+  // 操作原因。
+  string reason = 3;
+}
+// 设置平台管理员用户角色列表请求参数。
+message SetAdminUserRolesRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 角色编号列表。
+  repeated uint64 role_ids = 2;
+  // 操作原因。
+  string reason = 3;
+}

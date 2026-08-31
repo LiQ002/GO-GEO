@@ -1,0 +1,405 @@
+syntax = "proto3";
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// GEO 检测服务。
+service GeoMonitorService {
+  // 创建 GEO 监测计划。
+  rpc CreateMonitorPlan(CreateMonitorPlanRequest) returns (MonitorPlan) {
+    option (gnostic.openapi.v3.operation) = {summary: "创建 GEO 监测计划"};
+    option (google.api.http) = {
+      post: "/api/user/v1/geo-monitor-plans"
+      body: "*"
+    };
+  }
+  // 获取 GEO 监测计划。
+  rpc GetMonitorPlan(GetMonitorPlanRequest) returns (MonitorPlan) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取 GEO 监测计划"};
+    option (google.api.http) = {get: "/api/user/v1/geo-monitor-plans/{id}"};
+  }
+  // 查询监测计划列表。
+  rpc ListMonitorPlans(ListMonitorPlansRequest) returns (ListMonitorPlansReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询监测计划列表"};
+    option (google.api.http) = {get: "/api/user/v1/geo-monitor-plans"};
+  }
+  // 变更监测计划状态。
+  rpc ChangeMonitorPlanStatus(ChangeMonitorPlanStatusRequest) returns (MonitorPlan) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更监测计划状态"};
+    option (google.api.http) = {
+      post: "/api/user/v1/geo-monitor-plans/{id}:status"
+      body: "*"
+    };
+  }
+  // 更新 GEO 监测计划。
+  rpc UpdateMonitorPlan(UpdateMonitorPlanRequest) returns (MonitorPlan) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新 GEO 监测计划"};
+    option (google.api.http) = {
+      patch: "/api/user/v1/geo-monitor-plans/{id}"
+      body: "*"
+    };
+  }
+  // 删除 GEO 监测计划。
+  rpc DeleteMonitorPlan(DeleteMonitorPlanRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "删除 GEO 监测计划"};
+    option (google.api.http) = {delete: "/api/user/v1/geo-monitor-plans/{id}"};
+  }
+  // 查询 GEO 检测任务列表。
+  rpc ListGeoTasks(ListGeoTasksRequest) returns (ListGeoTasksReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询 GEO 检测任务列表"};
+    option (google.api.http) = {get: "/api/user/v1/geo-tasks"};
+  }
+  // 获取 GEO 回答。
+  rpc GetGeoAnswer(GetGeoAnswerRequest) returns (GeoAnswer) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取 GEO 回答"};
+    option (google.api.http) = {get: "/api/user/v1/geo-tasks/{task_id}/answer"};
+  }
+  // 获取 GEO 指标。
+  rpc GetGeoMetrics(GetGeoMetricsRequest) returns (GeoMetrics) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取 GEO 指标"};
+    option (google.api.http) = {get: "/api/user/v1/geo-metrics"};
+  }
+  // 获取企业 GEO 数据看板（聚合数据，企业级）。
+  rpc GetGeoDashboard(GetGeoDashboardRequest) returns (GeoDashboard) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取 GEO 数据看板"};
+    option (google.api.http) = {get: "/api/user/v1/geo-dashboard"};
+  }
+}
+// GEO 监测计划数据。
+message MonitorPlan {
+  // 唯一编号。
+  uint64 id = 1;
+  // 名称。
+  string name = 2;
+  // 品牌编号。
+  uint64 brand_id = 3;
+  // 状态。
+  int32 status = 4;
+  // 调度类型。
+  int32 schedule_type = 5;
+  // Cron 表达式。
+  string cron_expression = 6;
+  // 时区。
+  string timezone = 7;
+  // 问题编号列表 JSON。
+  string question_ids_json = 8;
+  // 检测站点目标 JSON。
+  string site_targets_json = 9;
+  // 下一次运行时间。
+  google.protobuf.Timestamp next_run_at = 10;
+  // 最近运行时间。
+  google.protobuf.Timestamp last_run_at = 11;
+  // 客户端请求幂等编号。
+  string client_request_id = 12;
+  // 数据版本号。
+  uint64 version = 13;
+  // 创建时间。
+  google.protobuf.Timestamp created_at = 14;
+  // 监测终端: 1=电脑端 2=移动端 3=并行(PC+移动端)。
+  int32 monitor_terminal = 15;
+}
+// GEO 检测任务数据。
+message GeoTask {
+  // 唯一编号。
+  uint64 id = 1;
+  // 监测计划编号。
+  uint64 monitor_plan_id = 2;
+  // 品牌编号。
+  uint64 brand_id = 3;
+  // 问题编号。
+  uint64 question_id = 4;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 5;
+  // 平台账号编号。
+  uint64 platform_account_id = 6;
+  // 模型入口。
+  string model_entry = 7;
+  // 语言区域。
+  string locale = 8;
+  // 区域。
+  string region = 9;
+  // 状态。
+  string status = 10;
+  // 任务优先级。
+  int32 priority = 11;
+  // 计划执行时间。
+  google.protobuf.Timestamp scheduled_at = 12;
+  // 错误分类。
+  string error_category = 13;
+  // 错误编码。
+  string error_code = 14;
+  // 错误信息。
+  string error_message = 15;
+  // 完成时间。
+  google.protobuf.Timestamp completed_at = 16;
+  // 对话页面链接（session_ref），用于跳转到原始对话页面。
+  string session_ref = 17;
+  // 是否收录成功（基于最新 analysis_result 的 brand_mentioned 字段）。
+  bool brand_mentioned = 18;
+  // 终端类型: 1=电脑端 2=移动端。
+  int32 terminal_type = 19;
+}
+// GEO 回答数据。
+message GeoAnswer {
+  // 快照编号。
+  uint64 snapshot_id = 1;
+  // 任务编号。
+  uint64 task_id = 2;
+  // 问题文本。
+  string question_text = 3;
+  // 回答文本。
+  string answer_text = 4;
+  // 回答状态。
+  string answer_status = 5;
+  // 截图键名。
+  string screenshot_key = 6;
+  // 证据数据 JSON。
+  string evidence_json = 7;
+  // 采集时间。
+  google.protobuf.Timestamp observed_at = 8;
+  // 引用列表。
+  repeated GeoCitation citations = 9;
+  // 提及列表。
+  repeated GeoMention mentions = 10;
+  // 可见性评分。
+  double visibility_score = 11;
+  // 准确性评分。
+  double accuracy_score = 12;
+  // 置信度。
+  double confidence = 13;
+  // 对话页面链接（session_ref），用于跳转到原始对话页面。
+  string session_ref = 14;
+}
+// GEO 引用数据。
+message GeoCitation {
+  // 地址。
+  string url = 1;
+  // 域名。
+  string domain = 2;
+  // 标题。
+  string title = 3;
+  // 位置。
+  uint32 position = 4;
+  // 企业来源。
+  bool enterprise_source = 5;
+  // 文章编号。
+  uint64 article_id = 6;
+}
+// GEO 提及数据。
+message GeoMention {
+  // 实体类型。
+  string entity_type = 1;
+  // 实体编号。
+  uint64 entity_id = 2;
+  // 文本。
+  string text = 3;
+  // 位置。
+  uint32 position = 4;
+  // 情感倾向。
+  string sentiment = 5;
+  // 置信度。
+  double confidence = 6;
+}
+// GEO 指标数据。
+message GeoMetrics {
+  // 回答总数。
+  int64 total_answers = 1;
+  // 有效回答数量。
+  int64 valid_answers = 2;
+  // 品牌提及比例。
+  double brand_mention_rate = 3;
+  // 引用比例。
+  double citation_rate = 4;
+  // 问题覆盖率比例。
+  double question_coverage_rate = 5;
+  // 平均可见性评分。
+  double average_visibility_score = 6;
+}
+// 创建 GEO 监测计划请求参数。
+message CreateMonitorPlanRequest {
+  // 套餐。
+  MonitorPlan plan = 1;
+}
+// 获取 GEO 监测计划请求参数。
+message GetMonitorPlanRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询监测计划列表请求参数。
+message ListMonitorPlansRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 品牌编号。
+  uint64 brand_id = 3;
+  // 状态。
+  int32 status = 4;
+}
+// 查询监测计划列表响应结果。
+message ListMonitorPlansReply {
+  // 数据列表。
+  repeated MonitorPlan items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 变更监测计划状态请求参数。
+message ChangeMonitorPlanStatusRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 数据版本号。
+  uint64 version = 2;
+  // 操作类型。
+  string action = 3;
+}
+// 更新 GEO 监测计划请求参数。
+message UpdateMonitorPlanRequest {
+  // 唯一编号。
+  uint64 id = 1;
+  // 监测计划名称。
+  string name = 2;
+  // 数据版本号（乐观锁）。
+  uint64 version = 3;
+}
+// 删除 GEO 监测计划请求参数。
+message DeleteMonitorPlanRequest {
+  // 唯一编号。
+  uint64 id = 1;
+}
+// 查询 GEO 检测任务列表请求参数。
+message ListGeoTasksRequest {
+  // 每页记录数。
+  int32 page_size = 1;
+  // 分页令牌。
+  string page_token = 2;
+  // 监测计划编号。
+  uint64 monitor_plan_id = 3;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 4;
+  // 状态。
+  string status = 5;
+}
+// 查询 GEO 检测任务列表响应结果。
+message ListGeoTasksReply {
+  // 数据列表。
+  repeated GeoTask items = 1;
+  // 下一页分页令牌。
+  string next_page_token = 2;
+  // 总记录数。
+  int64 total_size = 3;
+}
+// 获取 GEO 回答请求参数。
+message GetGeoAnswerRequest {
+  // 任务编号。
+  uint64 task_id = 1;
+}
+// 获取 GEO 指标请求参数。
+message GetGeoMetricsRequest {
+  // 品牌编号。
+  uint64 brand_id = 1;
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 2;
+  // 开始日期。
+  google.protobuf.Timestamp from = 3;
+  // 结束日期。
+  google.protobuf.Timestamp to = 4;
+}
+// 获取 GEO 数据看板请求参数。
+message GetGeoDashboardRequest {
+  // 时间范围：7d（近7天）、month（本月）、year（今年）；默认 7d。
+  string range = 1;
+  // 收录明细分页大小。
+  int32 page_size = 2;
+  // 收录明细分页令牌。
+  string page_token = 3;
+  // 收录明细平台筛选（0 表示全部）。
+  uint64 inclusion_site_id = 4;
+}
+// 企业名片数据。
+message DashboardCompanyCard {
+  // 企业名称。
+  string enterprise_name = 1;
+  // 上线时间。
+  google.protobuf.Timestamp online_at = 2;
+  // 到期时间。
+  google.protobuf.Timestamp expire_at = 3;
+  // 联系方式。
+  string contact = 4;
+  // 官网地址。
+  string website = 5;
+  // AI 训练量（被分析过的回答快照数）。
+  int64 ai_training_count = 6;
+  // 品牌名称。
+  string brand_name = 7;
+  // AI 画像关键词列表。
+  repeated string keywords = 8;
+  // 关键词数量。
+  int64 keyword_count = 9;
+  // 词条总量（关键词蒸馏的问题数量）。
+  int64 question_count = 10;
+  // 品牌名称列表（企业下所有品牌）。
+  repeated string brand_names = 11;
+}
+// 看板数据总览。
+message DashboardOverview {
+  // 收录总量（企业级，brand_mentioned=true 的快照数）。
+  int64 total_included = 1;
+  // 近30天收录量。
+  int64 recent_included = 2;
+  // 文章发布量（已发布状态的文章数）。
+  int64 published_articles = 3;
+  // 联系方式曝光量（提及表中与品牌相关的记录数）。
+  int64 contact_exposure = 4;
+}
+// 趋势图数据点。
+message DashboardTrendPoint {
+  // 日期（YYYY-MM-DD）。
+  string date = 1;
+  // 当日收录量。
+  int64 included = 2;
+}
+// 分平台收录量。
+message DashboardSiteStat {
+  // 检测模型站点编号。
+  uint64 inclusion_site_id = 1;
+  // 站点名称。
+  string site_name = 2;
+  // 收录量。
+  int64 included = 3;
+}
+// Top 热词榜项。
+message DashboardTopKeyword {
+  // 关键词编号。
+  uint64 keyword_id = 1;
+  // 关键词文本。
+  string keyword = 2;
+  // 收录成功次数。
+  int64 included_count = 3;
+}
+// GEO 数据看板。
+message GeoDashboard {
+  // 企业名片。
+  DashboardCompanyCard company = 1;
+  // 数据总览。
+  DashboardOverview overview = 2;
+  // 趋势图数据点。
+  repeated DashboardTrendPoint trend = 3;
+  // 分平台收录量。
+  repeated DashboardSiteStat site_stats = 4;
+  // Top 热词榜。
+  repeated DashboardTopKeyword top_keywords = 5;
+  // 收录明细任务列表。
+  repeated GeoTask tasks = 6;
+  // 下一页分页令牌。
+  string next_page_token = 7;
+  // 总记录数。
+  int64 total_size = 8;
+  // 更新时间。
+  google.protobuf.Timestamp updated_at = 9;
+}

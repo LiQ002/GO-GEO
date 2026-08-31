@@ -1,0 +1,196 @@
+syntax = "proto3";
+package user.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/user/v1;v1";
+// 企业用户认证服务。
+service AuthService {
+  // 登录。
+  rpc Login(LoginRequest) returns (LoginReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "登录"};
+    option (google.api.http) = {
+      post: "/api/user/v1/auth/login"
+      body: "*"
+    };
+  }
+  // 刷新登录令牌。
+  rpc Refresh(RefreshRequest) returns (LoginReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "刷新登录令牌"};
+    option (google.api.http) = {
+      post: "/api/user/v1/auth/refresh"
+      body: "*"
+    };
+  }
+  // 退出登录。
+  rpc Logout(LogoutRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "退出登录"};
+    option (google.api.http) = {
+      post: "/api/user/v1/auth/logout"
+      body: "*"
+    };
+  }
+  // 获取当前企业。
+  rpc GetCurrentEnterprise(GetCurrentEnterpriseRequest) returns (EnterpriseProfile) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取当前企业"};
+    option (google.api.http) = {get: "/api/user/v1/auth/me"};
+  }
+  // 更新企业资料。
+  rpc UpdateEnterpriseProfile(UpdateEnterpriseProfileRequest) returns (EnterpriseProfile) {
+    option (gnostic.openapi.v3.operation) = {summary: "更新企业资料"};
+    option (google.api.http) = {
+      put: "/api/user/v1/auth/profile"
+      body: "*"
+    };
+  }
+  // 变更密码。
+  rpc ChangePassword(ChangePasswordRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更密码"};
+    option (google.api.http) = {
+      post: "/api/user/v1/auth/change-password"
+      body: "*"
+    };
+  }
+  // 查询会话列表。
+  rpc ListSessions(ListSessionsRequest) returns (ListSessionsReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "查询会话列表"};
+    option (google.api.http) = {get: "/api/user/v1/auth/sessions"};
+  }
+  // 撤销登录会话。
+  rpc RevokeSession(RevokeSessionRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "撤销登录会话"};
+    option (google.api.http) = {delete: "/api/user/v1/auth/sessions/{session_id}"};
+  }
+}
+// 企业资料数据。
+message EnterpriseProfile {
+  // 企业编号。
+  uint64 enterprise_id = 1;
+  // 业务编码。
+  string code = 2;
+  // 名称。
+  string name = 3;
+  // 状态。
+  string status = 4;
+  // 行业。
+  string industry = 5;
+  // 区域。
+  string region = 6;
+  // 时区。
+  string timezone = 7;
+  // 语言区域。
+  string locale = 8;
+  // 联系人名称。
+  string contact_name = 9;
+  // 联系人邮箱。
+  string contact_email = 10;
+  // 联系人手机号。
+  string contact_phone = 11;
+  // 通知偏好 JSON。
+  string notification_json = 12;
+  // 数据版本号。
+  uint64 version = 13;
+  // 套餐名称。
+  string plan_name = 14;
+  // 订阅过期时间。
+  google.protobuf.Timestamp subscription_expires_at = 15;
+  // 配额列表。
+  repeated Quota quotas = 16;
+  // 点数余额（毫点）。
+  int64 points_balance = 17;
+  // 冻结点数（毫点）。
+  int64 points_frozen = 18;
+  // 订阅状态：active / expired。
+  string subscription_status = 19;
+}
+// 配额数据。
+message Quota {
+  // 指标。
+  string metric = 1;
+  // 上限值。
+  int64 limit_value = 2;
+  // 已使用值。
+  int64 used_value = 3;
+  // 预留值。
+  int64 reserved_value = 4;
+  // 周期。
+  string period = 5;
+  // 重置时间。
+  google.protobuf.Timestamp reset_at = 6;
+}
+// 登录会话数据。
+message Session {
+  // 唯一编号。
+  uint64 id = 1;
+  // 客户端设备编号。
+  string device_id = 2;
+  // IP 地址。
+  string ip_address = 3;
+  // 用户代理商。
+  string user_agent = 4;
+  // 最近在线时间。
+  google.protobuf.Timestamp last_seen_at = 5;
+  // 过期时间。
+  google.protobuf.Timestamp expires_at = 6;
+  // 当前。
+  bool current = 7;
+}
+// 登录请求参数。
+message LoginRequest {
+  // 登录用户名。
+  string username = 1;
+  // 登录密码。
+  string password = 2;
+  // 客户端设备编号。
+  string device_id = 3;
+}
+// 登录响应结果。
+message LoginReply {
+  // 访问令牌。
+  string access_token = 1;
+  // 刷新令牌。
+  string refresh_token = 2;
+  // 访问令牌过期时间。
+  google.protobuf.Timestamp access_expires_at = 3;
+  // 企业。
+  EnterpriseProfile enterprise = 4;
+}
+// 刷新请求参数。
+message RefreshRequest {
+  // 刷新令牌。
+  string refresh_token = 1;
+}
+// 退出登录请求参数。
+message LogoutRequest {
+  // 是否作用于全部会话。
+  bool all_sessions = 1;
+}
+// 获取当前企业请求参数。
+message GetCurrentEnterpriseRequest {}
+// 更新企业资料请求参数。
+message UpdateEnterpriseProfileRequest {
+  // 企业。
+  EnterpriseProfile enterprise = 1;
+}
+// 变更密码请求参数。
+message ChangePasswordRequest {
+  // 当前密码。
+  string current_password = 1;
+  // 新密码。
+  string new_password = 2;
+}
+// 查询会话列表请求参数。
+message ListSessionsRequest {}
+// 查询会话列表响应结果。
+message ListSessionsReply {
+  // 数据列表。
+  repeated Session items = 1;
+}
+// 撤销登录会话请求参数。
+message RevokeSessionRequest {
+  // 会话编号。
+  uint64 session_id = 1;
+}

@@ -1,0 +1,108 @@
+syntax = "proto3";
+package admin.v1;
+
+import "gnostic/openapi/v3/annotations.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "kratos-svr/api/admin/v1;v1";
+
+// 平台管理员认证服务。
+service AdminAuthService {
+  // 登录。
+  rpc Login(AdminLoginRequest) returns (AdminLoginReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "登录"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/auth/login"
+      body: "*"
+    };
+  }
+  // 刷新登录令牌。
+  rpc Refresh(AdminRefreshRequest) returns (AdminLoginReply) {
+    option (gnostic.openapi.v3.operation) = {summary: "刷新登录令牌"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/auth/refresh"
+      body: "*"
+    };
+  }
+  // 退出登录。
+  rpc Logout(AdminLogoutRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "退出登录"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/auth/logout"
+      body: "*"
+    };
+  }
+  // 获取当前平台管理员。
+  rpc GetCurrentAdmin(GetCurrentAdminRequest) returns (AdminProfile) {
+    option (gnostic.openapi.v3.operation) = {summary: "获取当前平台管理员"};
+    option (google.api.http) = {get: "/api/admin/v1/auth/me"};
+  }
+  // 变更密码。
+  rpc ChangePassword(AdminChangePasswordRequest) returns (google.protobuf.Empty) {
+    option (gnostic.openapi.v3.operation) = {summary: "变更密码"};
+    option (google.api.http) = {
+      post: "/api/admin/v1/auth/change-password"
+      body: "*"
+    };
+  }
+}
+// 平台管理员资料数据。
+message AdminProfile {
+  // 唯一编号。
+  uint64 id = 1;
+  // 登录用户名。
+  string username = 2;
+  // 显示名称。
+  string display_name = 3;
+  // 电子邮箱。
+  string email = 4;
+  // 状态。
+  string status = 5;
+  // 角色列表。
+  repeated string roles = 6;
+  // 权限列表。
+  repeated string permissions = 7;
+  // 最近登录时间。
+  google.protobuf.Timestamp last_login_at = 8;
+}
+// 平台管理员登录请求参数。
+message AdminLoginRequest {
+  // 登录用户名。
+  string username = 1;
+  // 登录密码。
+  string password = 2;
+  // 客户端设备编号。
+  string device_id = 3;
+}
+// 平台管理员登录响应结果。
+message AdminLoginReply {
+  // 访问令牌。
+  string access_token = 1;
+  // 刷新令牌。
+  string refresh_token = 2;
+  // 访问令牌过期时间。
+  google.protobuf.Timestamp access_expires_at = 3;
+  // 平台管理员。
+  AdminProfile admin = 4;
+}
+// 平台管理员刷新请求参数。
+message AdminRefreshRequest {
+  // 刷新令牌。
+  string refresh_token = 1;
+}
+// 平台管理员退出登录请求参数。
+message AdminLogoutRequest {
+  // 是否作用于全部会话。
+  bool all_sessions = 1;
+}
+// 获取当前平台管理员请求参数。
+message GetCurrentAdminRequest {}
+// 平台管理员变更密码请求参数。
+message AdminChangePasswordRequest {
+  // 当前密码。
+  string current_password = 1;
+  // 新密码。
+  string new_password = 2;
+}
